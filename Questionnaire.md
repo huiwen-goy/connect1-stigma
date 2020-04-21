@@ -1,8 +1,8 @@
  | Variable | Item |
 | :------------- | :----------: |
-| (not used) 	| Q1. Do you feel physically younger, the same, or older than your real age? |
-| (not used) 	| Q2. Do you feel mentally younger, the same, or older than your real age? |
-| (not used) 	| Q3. Do you feel socially younger, the same, or older than your real age? |
+| Sub_Age_avg 	| Q1. Do you feel physically younger, the same, or older than your real age? |
+| Sub_Age_avg 	| Q2. Do you feel mentally younger, the same, or older than your real age? |
+| Sub_Age_avg 	| Q3. Do you feel socially younger, the same, or older than your real age? |
 | (excluded from Age_stigma_avg) | Q4. When interacting with people younger than me, I feel like they interpret all my behaviour in terms of the fact that I am older. |
 | Age_stigma_avg | Q5. My age does not influence how people act with me. |
 | Age_stigma_avg | Q6. I almost never think about my age when I interact with people younger than me. |
@@ -12,13 +12,13 @@
 | HA_stigma_avg	| Q10. I am concerned about being seen wearing hearing aids. |
 | HA_stigma_avg	| Q11. Hearing aids make people seem older. |
 | HA_stigma_avg	| Q12. I get embarrassed at the thought of being seen wearing a hearing aid. |
-| LD_total	| Q13. Being by myself (e.g. listening to music) |
-| LD_total	| Q14. Being with a family member of friend. |
-| LD_total	| Q15. Being in a situation where I am in charge (e.g. leading a group activity). |
-| LD_total	| Q16. Being in a situation where I am not in charge. |
-| LD_total	| Q17. Being in public where it is expected that people use a microphone (e.g. meetings). |
-| LD_total	| Q18. Being in a familiar place outside of one's home. |
-| LD_total	| Q19. Being in a new or unfamiliar place. |
+| LD_total (not used)	| Q13. Being by myself (e.g. listening to music) |
+| LD_total	(not used) | Q14. Being with a family member of friend. |
+| LD_total (not used)	| Q15. Being in a situation where I am in charge (e.g. leading a group activity). |
+| LD_total (not used)	| Q16. Being in a situation where I am not in charge. |
+| LD_total (not used)	| Q17. Being in public where it is expected that people use a microphone (e.g. meetings). |
+| LD_total (not used)	| Q18. Being in a familiar place outside of one's home. |
+| LD_total (not used)	| Q19. Being in a new or unfamiliar place. |
 | (not used)	| Q20. When using an assistive listening technology other than a hearing aid. |
 | Soc_Suspect_HL | Q21. You SUSPECT may have a hearing loss. |
 | Soc_Know_HL	| Q22. You KNOW have a hearing loss. |
@@ -49,7 +49,7 @@
 | (not used)	| Q47. If you suspect you have a hearing loss, please indicate how long you think you have had a hearing loss. |
 | (not used)	| Q48. Approximately how MANY individuals are in your current social circle? |
 | Married	| Q49. Please indicate your marital/relationship status |
-| (not used)	| Q50. How easy can you get help from neighbours if you should need it? |
+| Help_neighbours	| Q50. How easy can you get help from neighbours if you should need it? |
 | Help_problems	| Q51. How many people are so close to you that you can count on them if you have serious problems? |
 | Concern	| Q52. How much concern do people show in what you are doing? |
 | Health	| Q53. Please rate your overall health. |
