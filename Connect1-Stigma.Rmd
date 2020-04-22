@@ -1,0 +1,569 @@
+---
+title: "Connect1-Stigma Study"
+output: html_document
+---
+### Read data
+This dataset only includes those who have a 'yes' consent form, did not ask to drop out, and do not have duplicated IDs (filtered in a previous pass).
+```{r, echo=FALSE}
+orig <- read.csv("Connect_Data_20191025.csv", header=TRUE)
+```
+
+### Filter data
+Only include participants with known age and sex, aged 50+, and have never used a HA.
+```{r, echo=FALSE}
+data <- orig[which(is.na(orig$Q44) == FALSE & is.na(orig$Q43) == FALSE & orig$Q44 > 49.5 & orig$Q42 == "No"), ]
+```
+
+### Rename and/or recode variables for logistic regression
+Note that the "social circle" questions have been recoded to a binary response because of the large numbers of "0" responses. This recoding classifies a participant as knowing nobody with that characteristic (0) or knowing at least one person with that characteristic (1).
+```{r, echo=FALSE, results='hide'}
+
+data$Age <- data$Q44
+
+data$Sex <- c(NA)
+data$Sex[data$Q43 == "Male"] <- 1
+data$Sex[data$Q43 == "Female"] <- 0
+table(data$Q43, data$Sex)
+
+data$Edu <- data$Q46_Corrected
+
+data$Health <- data$Q53
+
+data$QoL <- data$Q54
+
+data$Accomp <- c(NA)
+data$Accomp[data$Q45 == "Yes"] <- 1
+data$Accomp[data$Q45 == "No"] <- 0
+table(data$Q45, data$Accomp)
+
+data$Married <- c(NA) 
+data$Married[data$marital_recoded == "Married"] <- 1
+data$Married[data$marital_recoded == "Sep_Divor"] <- 0
+data$Married[data$marital_recoded == "Single"] <- 0
+data$Married[data$marital_recoded == "Widowed"] <- 0
+data$Married[data$marital_recoded == "Other"] <- 0
+table(data$marital_recoded, data$Married)
+
+data$Help_neighbours <- data$Q50_Corrected
+table(data$Q50_Corrected, data$Help_neighbours)
+
+data$Help_problems <- c(NA)
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "0"] <- 0
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "1_2"] <- 1
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "3_5"] <- 2
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "5+"] <- 3
+table(data$Q51, data$Help_problems)
+
+data$Concern <- data$Q52
+
+data$Lonely <- data$Q55
+
+# Q21
+data$Soc_Suspect_HL <- c(NA)
+data$Soc_Suspect_HL[data$Q21_Corrected != "0" & is.na(data$Q21_Corrected)==FALSE] <- 1
+data$Soc_Suspect_HL[data$Q21_Corrected == "0" & is.na(data$Q21_Corrected)==FALSE] <- 0 
+table(data$Q21_Corrected, data$Soc_Suspect_HL)
+
+# Q22
+data$Soc_Know_HL <- c(NA)
+data$Soc_Know_HL[data$Q22_Corrected != "0" & is.na(data$Q22_Corrected)==FALSE] <- 1
+data$Soc_Know_HL[data$Q22_Corrected == "0" & is.na(data$Q22_Corrected)==FALSE] <- 0 
+table(data$Q22_Corrected, data$Soc_Know_HL)
+
+# Q23
+data$Soc_Discuss_HL <- c(NA)
+data$Soc_Discuss_HL[data$Q23_Corrected != "0" & is.na(data$Q23_Corrected)==FALSE] <- 1
+data$Soc_Discuss_HL[data$Q23_Corrected == "0" & is.na(data$Q23_Corrected)==FALSE] <- 0 
+table(data$Q23_Corrected, data$Soc_Discuss_HL)
+
+# Q24
+data$Soc_Hearing_test <- c(NA)
+data$Soc_Hearing_test[data$Q24_Corrected != "0" & is.na(data$Q24_Corrected)==FALSE] <- 1
+data$Soc_Hearing_test[data$Q24_Corrected == "0" & is.na(data$Q24_Corrected)==FALSE] <- 0 
+table(data$Q24_Corrected, data$Soc_Hearing_test)
+
+# Q25
+data$Soc_Obtain_HA <- c(NA)
+data$Soc_Obtain_HA[data$Q25_Corrected != "0" & is.na(data$Q25_Corrected)==FALSE] <- 1
+data$Soc_Obtain_HA[data$Q25_Corrected == "0" & is.na(data$Q25_Corrected)==FALSE] <- 0 
+table(data$Q25_Corrected, data$Soc_Obtain_HA)
+
+# Q26
+data$Soc_Sometimes_use <- c(NA)
+data$Soc_Sometimes_use[data$Q26_Corrected != "0" & is.na(data$Q26_Corrected)==FALSE] <- 1
+data$Soc_Sometimes_use[data$Q26_Corrected == "0" & is.na(data$Q26_Corrected)==FALSE] <- 0 
+table(data$Q26_Corrected, data$Soc_Sometimes_use)
+
+# Q27
+data$Soc_Regular_use <- c(NA)
+data$Soc_Regular_use[data$Q27_Corrected != "0" & is.na(data$Q27_Corrected)==FALSE] <- 1
+data$Soc_Regular_use[data$Q27_Corrected == "0" & is.na(data$Q27_Corrected)==FALSE] <- 0 
+table(data$Q27_Corrected, data$Soc_Regular_use)
+
+# Q28
+data$Soc_Very_positive <- c(NA)
+data$Soc_Very_positive[data$Q28_Corrected != "0" & is.na(data$Q28_Corrected)==FALSE] <- 1
+data$Soc_Very_positive[data$Q28_Corrected == "0" & is.na(data$Q28_Corrected)==FALSE] <- 0
+table(data$Q28_Corrected, data$Soc_Very_positive)
+
+# Q29
+data$Soc_Somewhat_positive <- c(NA)
+data$Soc_Somewhat_positive[data$Q29_Corrected != "0" & is.na(data$Q29_Corrected)==FALSE] <- 1
+data$Soc_Somewhat_positive[data$Q29_Corrected == "0" & is.na(data$Q29_Corrected)==FALSE] <- 0 
+table(data$Q29_Corrected, data$Soc_Somewhat_positive)
+
+# Q30
+data$Soc_Somewhat_negative <- c(NA)
+data$Soc_Somewhat_negative[data$Q30_Corrected != "0" & is.na(data$Q30_Corrected)==FALSE] <- 1
+data$Soc_Somewhat_negative[data$Q30_Corrected == "0" & is.na(data$Q30_Corrected)==FALSE] <- 0 
+table(data$Q30_Corrected, data$Soc_Somewhat_negative)
+
+# Q31
+data$Soc_Very_negative <- c(NA)
+data$Soc_Very_negative[data$Q31_Corrected != "0" & is.na(data$Q31_Corrected)==FALSE] <- 1
+data$Soc_Very_negative[data$Q31_Corrected == "0" & is.na(data$Q31_Corrected)==FALSE] <- 0 
+table(data$Q31_Corrected, data$Soc_Very_negative)
+
+# outcome measure
+data$Purchased_HA <- c(NA)
+data$Purchased_HA[data$HA.Purchase == "Yes" & is.na(data$HA.Purchase)==FALSE] <- 1
+data$Purchased_HA[data$HA.Purchase == "No" & is.na(data$HA.Purchase)==FALSE] <- 0
+table(data$HA.Purchase, data$Purchased_HA)
+```
+
+### Missing data check before logistic regression
+Ensure no missing cells for 27 predictors and 1 outcome (n=1917 cases are good). 
+Note that LD_total is not included in this list of variables. 
+```{r, echo=FALSE}
+data2 <- subset(data, 
+  is.na(data$Age)==F & 
+  is.na(data$PTA4_better_ear)==F & 
+  is.na(data$HHIE_total)==F & 
+  is.na(data$Sex)==F & 
+  is.na(data$Edu)==F &  
+  is.na(data$Married)==F &  
+  is.na(data$Health)==F & 
+  is.na(data$QoL)==F & 
+  is.na(data$Help_neighbours)==F &  
+  is.na(data$Help_problems)==F &
+  is.na(data$Concern)==F & 
+  is.na(data$Lonely)==F &   
+  is.na(data$Sub_Age_avg)==F &  
+  is.na(data$Age_stigma_avg)==F & 
+  is.na(data$HA_stigma_avg)==F & 
+  is.na(data$Accomp)==F & 
+  is.na(data$Soc_Suspect_HL)==F &
+  is.na(data$Soc_Know_HL)==F &
+  is.na(data$Soc_Discuss_HL)==F &
+  is.na(data$Soc_Hearing_test)==F &
+  is.na(data$Soc_Obtain_HA)==F &   
+  is.na(data$Soc_Sometimes_use)==F &
+  is.na(data$Soc_Regular_use)==F &
+  is.na(data$Soc_Very_positive)==F &
+  is.na(data$Soc_Somewhat_positive)==F &
+  is.na(data$Soc_Somewhat_negative)==F &
+  is.na(data$Soc_Very_negative)==F & 
+  is.na(data$Purchased_HA)==F)
+```
+
+### Filter by hearing criterion
+Include only participants with hearing loss (n=772; or 0.4027126 of 1917)
+```{r, echo=FALSE}
+mild <- subset(data2, PTA4_better_ear > 25.0)
+```
+
+### Backtracking: Correlation between Listening Difficulty items
+Note that Q20 is not included in the average as most participants are NA on this item.
+```{r, echo=FALSE}
+LD <- as.matrix(mild[, c('Q13_Corrected', 'Q14_Corrected', 'Q15_Corrected', 'Q16_Corrected', 
+  'Q17_Corrected', 'Q18_Corrected', 'Q19_Corrected')])
+library(psych)
+lowerMat(cor(LD, use="complete.obs", method="pearson"))
+```
+
+### Backtracking: Correlation between Subjective Age items
+```{r, echo=FALSE}
+library(psych)
+lowerMat(cor(data.frame(mild$Q1_Corrected, mild$Q2_Corrected, mild$Q3_Corrected), use="complete.obs", method="pearson"))
+```
+
+### Backtracking: Correlation between Age Stigma items
+Note that Q4 doesn't correlate well with other items and will be excluded from the average (composite) measure.
+```{r, echo=FALSE}
+library(psych)
+lowerMat(cor(data.frame(mild$Q4_Corrected, mild$Q5_Corrected, mild$Q6_Corrected, mild$Q7_Corrected, mild$Q8_Corrected), use="complete.obs", method="pearson"))
+```
+
+### Backtracking: Correlation between Hearing Aid Stigma items
+All items correlate well and are included in the average (composite) measure.
+```{r, echo=FALSE}
+library(psych)
+lowerMat(cor(data.frame(mild$Q9_Corrected, mild$Q10_Corrected, mild$Q11_Corrected, mild$Q12_Corrected), use="complete.obs", method="pearson"))
+```
+
+### Reference for method
+Pronk M, Deeg DJH, Versfeld NJ, Heymans MW, Naylor G, Kramer SE. Predictors of Entering a Hearing Aid Evaluation Period: A Prospective Study in Older Hearing-Help Seekers. Trends Hear. 2017;21:2331216517744915. doi:10.1177/2331216517744915
+
+Note from Marieke: The R package used for the Net Reclassification Improvement is PredictABEL, with the function *reclassification* (categorical variant).
+
+### Constructing a "basic" model with predictors that are expected to play a role
+The Listening Difficulty (LD_total) measure was not included here as it's not a validated measure, unlike HHIE. PTA doesn't seem to play a strong role.
+```{r, echo=FALSE}
+m.basic <- glm(Purchased_HA ~ Age + HHIE_total + PTA4_better_ear, family = binomial("logit"), data = mild)
+anova(m.basic, test="Chisq")
+exp(cbind(OR = coef(m.basic), confint(m.basic)))
+```
+
+Group differences on Age, HHIE and PTA4 between those who did not purchase (No) and those who did purchase (Yes) hearing aids.
+```{r, echo=FALSE}
+tapply(mild$Age, list(Group = mild$HA.Purchase), mean)
+tapply(mild$HHIE_total, list(Group = mild$HA.Purchase), mean)
+tapply(mild$PTA4_better_ear, list(Group = mild$HA.Purchase), mean)
+```
+
+### Checking correlations between predictors
+```{r, echo=FALSE}
+library(psych)
+lowerMat(cor(data.frame(mild$Age, mild$HHIE_total, mild$PTA4_better_ear), method="pearson"))
+```
+
+A backwards elimination procedure confirms that PTA isn't a significant predictor, so the new "basic" model only includes two predictors (Age + HHIE).
+```{r, echo=FALSE}
+step(object = m.basic, direction = c("backward"), trace = 1)
+m.basic <- glm(Purchased_HA ~ Age + HHIE_total, family = binomial("logit"), data = mild)
+summary(m.basic)
+```
+
+### Checking variance inflation factors
+Predictors in the "basic" model are not multicollinear (VIF < 5).
+```{r, echo=FALSE}
+library(car)
+vif(m.basic)
+```
+
+### Obtaining predictions from the "basic" model
+Predicted outcomes are continuous scores, and must be converted to binary outcomes (1 or 0). 
+Only 0.1943005 of participants obtained hearing aids in this sample, so the threshold at which a predicted response is considered a "yes" (1) is set to ≥0.1943, otherwise in a logistic regression model the threshold might typically be set to ≥0.5.
+ 
+A few rows as an example:
+```{r, echo=FALSE}
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(mild, select=c('Age', 'HHIE_total')), type = 'response')
+basic.fitted.results.bi <- ifelse(basic.fitted.results > 0.1943005, 1, 0)
+
+purchase_outcome <- mild$Purchased_HA
+head(cbind(purchase_outcome, basic.fitted.results, basic.fitted.results.bi), n = 10)
+```
+
+### Add one new predictor at a time to the basic model
+As an example, this new model contains the added variable "Sex".
+As before, continuous predictions are converted to binary outcomes.
+```{r, echo=FALSE}
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Sex, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Sex')), type = 'response')
+summary(m.new)
+new.fitted.results.bi <- ifelse(new.fitted.results > 0.1943005, 1, 0)
+```
+
+### Example manual calculation of the Net Reclassification Improvement
+With an added variable "Sex", the Net Reclassification Improvement is 0.01839228.
+```{r, echo=FALSE}
+(t1 <- table(mild$HA.Purchase, basic.fitted.results.bi))
+(t2 <- table(mild$HA.Purchase, new.fitted.results.bi))
+(t2[4] - t1[4])/sum(mild$HA.Purchase == "Yes") + (t1[3] - t2[3])/sum(mild$HA.Purchase == "No")
+```
+
+### Using package PredictABEL to calculate the Net Reclassification Improvement
+The "basic" model stays the same. The third variable in the "new" model should be changed to each of the 24 novel predictors of interest. There is no need to transform continuous predicted values to binary outcomes, as the threshold can be specified in the *reclassification* function. The output from the *reclassification* function (NRI Categorical) should give the same proportion as the manual calculation. In addition, the function calculates a 95% C.I. and a probability value of this change in classification occurring. As an example, the below model includes the added variable "Sex".
+```{r, echo=FALSE}
+library(PredictABEL)
+
+m.basic <- glm(Purchased_HA ~ Age + HHIE_total, family = binomial("logit"), data = mild)
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(mild, select=c('Age', 'HHIE_total')), type = 'response')
+
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Sex, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Sex')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+```
+
+Repeat *reclassification* function for all novel predictors and note the NRI values.
+```{r, echo=FALSE, results='hide'}
+library(PredictABEL)
+
+m.basic <- glm(Purchased_HA ~ Age + HHIE_total, family = binomial("logit"), data = mild)
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(mild, select=c('Age', 'HHIE_total')), type = 'response')
+
+# Sex
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Sex, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Sex')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+# Edu
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Edu, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Edu')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Married
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Married, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Married')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Health	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Health, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Health')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#QoL
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + QoL, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'QoL')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Help_neighbours	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Help_neighbours, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Help_neighbours')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Help_problems	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Help_problems, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Help_problems')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Concern
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Concern, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Concern')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Lonely	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Lonely, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Lonely')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Sub_Age_avg	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Sub_Age_avg, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Sub_Age_avg')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Age_stigma_avg	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Age_stigma_avg, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Age_stigma_avg')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#HA_stigma_avg	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + HA_stigma_avg, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'HA_stigma_avg')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Accomp		
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Accomp, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Accomp')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Suspect_HL	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Suspect_HL, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Suspect_HL')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Know_HL	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Know_HL, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Know_HL')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Discuss_HL	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Discuss_HL, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Discuss_HL')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Hearing_test		
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Hearing_test, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Hearing_test')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Obtain_HA  
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Obtain_HA, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Obtain_HA')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Sometimes_use	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Sometimes_use, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Sometimes_use')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Regular_use	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Regular_use, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Regular_use')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Very_positive	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Very_positive, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Very_positive')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Somewhat_positive		
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Somewhat_positive, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Somewhat_positive')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Somewhat_negative	
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Somewhat_negative, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Somewhat_negative')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+#Soc_Very_negative
+m.new <- glm(Purchased_HA ~ Age + HHIE_total + Soc_Very_negative, family = binomial("logit"), data = mild)
+new.fitted.results <- predict.glm(m.new, newdata = subset(mild, select=c('Age', 'HHIE_total', 'Soc_Very_negative')), type = 'response')
+reclassification(data = mild, cOutcome = 133, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1943005, 1))
+
+```
+
+##### Table of NRI values for 24 novel predictors
+|Predictor |NRI |p-value|
+|----------|----|-------|
+|Sex	|0.0184	|0.44778|
+|Edu	|-0.0048	|0.75415|
+|Married	|-0.0198	|0.06356|
+|Health	|0.0099	|0.69573|
+|QoL	|-0.0099	|0.44037|
+|Help_neighbours	|-0.0179	|0.32219|
+|Help_problems	|0.0016	|0.5636|
+|Concern	|-0.0198	|0.34444|
+|Lonely	|-0.0329	|0.09428|
+|Sub_Age_avg	|0.0131	|0.45296|
+|Age_stigma_avg	|-0.0131	|0.11729|
+|HA_stigma_avg	|0.0133	|0.58731|
+|Accomp	|-0.0016	|0.70542|
+|Soc_Suspect_HL	|0.0002	|0.99246|
+|Soc_Know_HL	|-0.0048	|0.75152|
+|Soc_Discuss_HL	|-0.0209	|0.3981|
+|Soc_Hearing_test	|-0.0083	|0.29425|
+|Soc_Obtain_HA  	|-0.0133	|0.25877|
+|Soc_Sometimes_use	|-0.0131	|0.15649|
+|Soc_Regular_use	|-0.0149	|0.4145|
+|Soc_Very_positive	|-0.0048	|0.86846|
+|Soc_Somewhat_positive	|0	|1|
+|Soc_Somewhat_negative	|-0.0165	|0.161|
+|Soc_Very_negative	|0.0002	|0.97563|
+	
+### Final model
+None of the novel predictors were helpful in improving prediction of outcomes. The basic model is the final model.
+
+##### Correctly and incorrectly predicted HA purchase outcomes in the "basic" model
+```{r, echo=FALSE}
+t1 <- table(mild$HA.Purchase, basic.fitted.results.bi)
+colnames(t1) <- c("PredictedNo", "PredictedYes")
+t1
+
+prop.table(t1, 1)*100
+```
+
+### ROC curves: Age, HHIE-S, PTA4 (better ear)
+Area Under Curve for Age = 0.586
+ 
+Area Under Curve for HHIE-S = 0.604
+ 
+Area Under Curve for PTA4 (better ear) = 0.58
+ 
+```{r, echo=FALSE}
+m.age <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = mild)
+pred.age <- predict.glm(m.age, newdata = subset(mild, select=c('Age')), type = 'response')
+
+m.hhie <- glm(Purchased_HA ~ HHIE_total, family = binomial("logit"), data = mild)
+pred.hhie <- predict.glm(m.hhie, newdata = subset(mild, select=c('HHIE_total')), type = 'response')
+
+m.pta <- glm(Purchased_HA ~ PTA4_better_ear, family = binomial("logit"), data = mild)
+pred.pta <- predict.glm(m.pta, newdata = subset(mild, select=c('PTA4_better_ear')), type = 'response')
+
+pred.risk <- cbind(pred.age, pred.hhie, pred.pta)  
+    
+library(PredictABEL)
+plotROC(data = mild, 
+  cOutcome = 133, 
+  predrisk = pred.risk, 
+  labels = c("Age", "HHIE-S", "PTA4 better ear"), 
+  plottitle = "ROC plots", 
+  xlabel = "1 - Specificity", 
+  ylabel = "Sensitivity")
+  #fileplot = "~/Desktop/ROC.png"
+  #plottype = "png"
+```
+
+### Time to hearing aid purchase
+The following relevant variables are available in the data from CH:
+- Date of most recent hearing evaluation
+- Date of 1st visit to the clinic
+- Date of most recent visit to the clinic
+- Purchase (Yes/No)
+- Date of Purchase
+- Date of Fitting Appointment
+There is a variable in the file called "Length of time between Survey and HA fitting" but the column contains no data.
+
+Limiting the analysis to those who purchased hearing aids during the course of the study:
+```{r, echo=FALSE}
+yes <- subset(mild, Purchased_HA == 1)
+nrow(yes)
+
+yes$date_firstvisit <- as.Date(yes$Date.1st.Visit.Clinic, format = "%m %d %Y")
+yes$date_mostrecent <- as.Date(yes$Date.Most.Recent.Visit.Clinic, format = "%m %d %Y")
+yes$date_purchase <- as.Date(yes$Date.HA.Purchase, format = "%m %d %Y")
+```
+
+Some people appear to be missing the date of "first visit", whereas everybody has the date of "most recent" visit and the date of purchase.
+```{r, echo=FALSE}
+sum(is.na(yes$date_firstvisit))
+sum(is.na(yes$date_mostrecent))
+sum(is.na(yes$date_purchase))
+```
+
+Splitting the group into those with "first visit" data, and those without.
+```{r, echo=FALSE}
+yes1 <- yes[is.na(yes$date_firstvisit) == FALSE, ]
+yes2 <- yes[is.na(yes$date_firstvisit) == TRUE, ]
+```
+
+For those with "first visit" data, the "first visit" is always before, or same as, "most recent". 
+```{r, echo=FALSE}
+plot(yes1$date_mostrecent - yes1$date_firstvisit, 
+  xlab="Participant case", ylab="Most recent - First visit")
+```
+
+For those with "first visit" data, the "most recent" visit is usually after "HA purchase".
+```{r, echo=FALSE}
+plot(yes1$date_mostrecent - yes1$date_purchase, 
+   xlab="Participant case", ylab="Most recent - Date of purchase")
+```
+
+For those without "first visit" data, the "most recent" visit is usually after "HA purchase".
+```{r, echo=FALSE}
+plot(yes2$date_mostrecent - yes2$date_purchase, 
+   xlab="Participant case", ylab="Most recent - Date of purchase")
+```
+
+The first 10 rows of the raw time data, as an illustration.
+```{r, echo=FALSE}
+yes[, c(134:136)][1:10, ]
+```
+
+For those with "first visit" data, the median time to purchase is 21 days, range 0 to 349 days.
+```{r, echo=FALSE}
+yes1$time_to_purchase <- as.numeric(yes1$date_purchase - yes1$date_firstvisit)
+summary(yes1$time_to_purchase)
+
+hist(yes1$time_to_purchase, breaks = 30, col = "grey",
+  xlab="Time from first visit to HA purchase (days)", 
+  ylab = "Number of HA purchasers", 
+  main = "Only those with *first visit* data available, n = 109")
+```
+
+### Relationship between Age Stigma and Time to Purchase
+Note: For n=109 with "first visit" data available.
+```{r, echo=FALSE}
+plot(yes1$Age_stigma_avg, yes1$time_to_purchase, xlab = "Age stigma (average)", ylab = "Time to purchase")
+cor.test(yes1$Age_stigma_avg, yes1$time_to_purchase)
+```
+
+### Relationship between Hearing Aid Stigma and Time to Purchase
+Note: For n=109 with "first visit" data available.
+```{r, echo=FALSE}
+plot(yes1$HA_stigma_avg, yes1$time_to_purchase, xlab = "Hearing aid stigma (average)", ylab = "Time to purchase")
+cor.test(yes1$HA_stigma_avg, yes1$time_to_purchase)
+```
+
