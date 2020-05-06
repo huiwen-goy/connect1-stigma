@@ -1,0 +1,548 @@
+---
+title: "Connect1-Stigma Study: Using different criteria for inclusion"
+output: html_document
+---
+# Preparing dataset for analyses
+Steps: Read data, rename/recode variables, exclude rows with missing data for 28 predictors and 1 outcome.
+```{r, echo=FALSE, results='hide'}
+orig <- read.csv("Connect_Data_20191025.csv", header=TRUE)
+
+# must have known age and sex, 50+ years old, never used a HA
+data <- orig[which(is.na(orig$Q44) == FALSE & is.na(orig$Q43) == FALSE & orig$Q44 > 49.5 & orig$Q42 == "No"), ]
+
+# tidying up
+rm(list = c("orig"))
+
+data$Age <- data$Q44
+
+data$Sex <- c(NA)
+data$Sex[data$Q43 == "Male"] <- 1
+data$Sex[data$Q43 == "Female"] <- 0
+table(data$Q43, data$Sex)
+
+data$Edu <- data$Q46_Corrected
+
+data$Health <- data$Q53
+
+data$QoL <- data$Q54
+
+data$Accomp <- c(NA)
+data$Accomp[data$Q45 == "Yes"] <- 1
+data$Accomp[data$Q45 == "No"] <- 0
+table(data$Q45, data$Accomp)
+
+data$Married <- c(NA) 
+data$Married[data$marital_recoded == "Married"] <- 1
+data$Married[data$marital_recoded == "Sep_Divor"] <- 0
+data$Married[data$marital_recoded == "Single"] <- 0
+data$Married[data$marital_recoded == "Widowed"] <- 0
+data$Married[data$marital_recoded == "Other"] <- 0
+table(data$marital_recoded, data$Married)
+
+data$Help_neighbours <- data$Q50_Corrected
+table(data$Q50_Corrected, data$Help_neighbours)
+
+data$Help_problems <- c(NA)
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "0"] <- 0
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "1_2"] <- 1
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "3_5"] <- 2
+data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "5+"] <- 3
+table(data$Q51, data$Help_problems)
+
+data$Concern <- data$Q52
+
+data$Lonely <- data$Q55
+
+# Q21
+data$Soc_Suspect_HL <- c(NA)
+data$Soc_Suspect_HL[data$Q21_Corrected != "0" & is.na(data$Q21_Corrected)==FALSE] <- 1
+data$Soc_Suspect_HL[data$Q21_Corrected == "0" & is.na(data$Q21_Corrected)==FALSE] <- 0 
+table(data$Q21_Corrected, data$Soc_Suspect_HL)
+
+# Q22
+data$Soc_Know_HL <- c(NA)
+data$Soc_Know_HL[data$Q22_Corrected != "0" & is.na(data$Q22_Corrected)==FALSE] <- 1
+data$Soc_Know_HL[data$Q22_Corrected == "0" & is.na(data$Q22_Corrected)==FALSE] <- 0 
+table(data$Q22_Corrected, data$Soc_Know_HL)
+
+# Q23
+data$Soc_Discuss_HL <- c(NA)
+data$Soc_Discuss_HL[data$Q23_Corrected != "0" & is.na(data$Q23_Corrected)==FALSE] <- 1
+data$Soc_Discuss_HL[data$Q23_Corrected == "0" & is.na(data$Q23_Corrected)==FALSE] <- 0 
+table(data$Q23_Corrected, data$Soc_Discuss_HL)
+
+# Q24
+data$Soc_Hearing_test <- c(NA)
+data$Soc_Hearing_test[data$Q24_Corrected != "0" & is.na(data$Q24_Corrected)==FALSE] <- 1
+data$Soc_Hearing_test[data$Q24_Corrected == "0" & is.na(data$Q24_Corrected)==FALSE] <- 0 
+table(data$Q24_Corrected, data$Soc_Hearing_test)
+
+# Q25
+data$Soc_Obtain_HA <- c(NA)
+data$Soc_Obtain_HA[data$Q25_Corrected != "0" & is.na(data$Q25_Corrected)==FALSE] <- 1
+data$Soc_Obtain_HA[data$Q25_Corrected == "0" & is.na(data$Q25_Corrected)==FALSE] <- 0 
+table(data$Q25_Corrected, data$Soc_Obtain_HA)
+
+# Q26
+data$Soc_Sometimes_use <- c(NA)
+data$Soc_Sometimes_use[data$Q26_Corrected != "0" & is.na(data$Q26_Corrected)==FALSE] <- 1
+data$Soc_Sometimes_use[data$Q26_Corrected == "0" & is.na(data$Q26_Corrected)==FALSE] <- 0 
+table(data$Q26_Corrected, data$Soc_Sometimes_use)
+
+# Q27
+data$Soc_Regular_use <- c(NA)
+data$Soc_Regular_use[data$Q27_Corrected != "0" & is.na(data$Q27_Corrected)==FALSE] <- 1
+data$Soc_Regular_use[data$Q27_Corrected == "0" & is.na(data$Q27_Corrected)==FALSE] <- 0 
+table(data$Q27_Corrected, data$Soc_Regular_use)
+
+# Q28
+data$Soc_Very_positive <- c(NA)
+data$Soc_Very_positive[data$Q28_Corrected != "0" & is.na(data$Q28_Corrected)==FALSE] <- 1
+data$Soc_Very_positive[data$Q28_Corrected == "0" & is.na(data$Q28_Corrected)==FALSE] <- 0
+table(data$Q28_Corrected, data$Soc_Very_positive)
+
+# Q29
+data$Soc_Somewhat_positive <- c(NA)
+data$Soc_Somewhat_positive[data$Q29_Corrected != "0" & is.na(data$Q29_Corrected)==FALSE] <- 1
+data$Soc_Somewhat_positive[data$Q29_Corrected == "0" & is.na(data$Q29_Corrected)==FALSE] <- 0 
+table(data$Q29_Corrected, data$Soc_Somewhat_positive)
+
+# Q30
+data$Soc_Somewhat_negative <- c(NA)
+data$Soc_Somewhat_negative[data$Q30_Corrected != "0" & is.na(data$Q30_Corrected)==FALSE] <- 1
+data$Soc_Somewhat_negative[data$Q30_Corrected == "0" & is.na(data$Q30_Corrected)==FALSE] <- 0 
+table(data$Q30_Corrected, data$Soc_Somewhat_negative)
+
+# Q31
+data$Soc_Very_negative <- c(NA)
+data$Soc_Very_negative[data$Q31_Corrected != "0" & is.na(data$Q31_Corrected)==FALSE] <- 1
+data$Soc_Very_negative[data$Q31_Corrected == "0" & is.na(data$Q31_Corrected)==FALSE] <- 0 
+table(data$Q31_Corrected, data$Soc_Very_negative)
+
+#Q56 overall hearing ability
+data$Ability <- data$Q56_Corrected
+table(data$Ability)
+
+# outcome measure
+data$Purchased_HA <- c(NA)
+data$Purchased_HA[data$HA.Purchase == "Yes" & is.na(data$HA.Purchase)==FALSE] <- 1
+data$Purchased_HA[data$HA.Purchase == "No" & is.na(data$HA.Purchase)==FALSE] <- 0
+table(data$HA.Purchase, data$Purchased_HA)
+
+# only rows with all variables present
+data2 <- subset(data, 
+  is.na(data$Age)==F & 
+  is.na(data$PTA4_better_ear)==F & 
+  is.na(data$HHIE_total)==F & 
+  is.na(data$Ability)==F &  
+  is.na(data$Sex)==F & 
+  is.na(data$Edu)==F &  
+  is.na(data$Married)==F &  
+  is.na(data$Health)==F & 
+  is.na(data$QoL)==F & 
+  is.na(data$Help_neighbours)==F &  
+  is.na(data$Help_problems)==F &
+  is.na(data$Concern)==F & 
+  is.na(data$Lonely)==F &   
+  is.na(data$Sub_Age_avg)==F &  
+  is.na(data$Age_stigma_avg)==F & 
+  is.na(data$HA_stigma_avg)==F & 
+  is.na(data$Accomp)==F & 
+  is.na(data$Soc_Suspect_HL)==F &
+  is.na(data$Soc_Know_HL)==F &
+  is.na(data$Soc_Discuss_HL)==F &
+  is.na(data$Soc_Hearing_test)==F &
+  is.na(data$Soc_Obtain_HA)==F &   
+  is.na(data$Soc_Sometimes_use)==F &
+  is.na(data$Soc_Regular_use)==F &
+  is.na(data$Soc_Very_positive)==F &
+  is.na(data$Soc_Somewhat_positive)==F &
+  is.na(data$Soc_Somewhat_negative)==F &
+  is.na(data$Soc_Very_negative)==F & 
+  is.na(data$Purchased_HA)==F)
+
+rm(list = c("data")) # tidying up
+```
+
+# PTA
+Include only participants with PTA4 > 25 dB HL in the better ear (case count and %).
+```{r, echo=FALSE}
+pta <- subset(data2, PTA4_better_ear > 25.0)
+length(pta[,1])
+length(pta[,1]) / length(data2[,1]) * 100
+```
+  
+## Correlations: PTA, HHIE-S, Hearing ability
+```{r, echo=FALSE}
+
+# PTA, HHIE
+with(pta, plot(PTA4_better_ear, jitter(HHIE_total), xlim = c(20, 80), ylim = c(0, 40),
+  xlab = "PTA4 better ear (dB HL)", ylab = "HHIE-S", main = "PTA4 better ear > 25"))
+round(with(pta, cor.test(PTA4_better_ear, HHIE_total))$estimate, 3)
+with(pta, cor.test(PTA4_better_ear, HHIE_total))$p.value
+
+# PTA, Ability
+with(pta, plot(PTA4_better_ear, jitter(Ability), xlim = c(20, 80), ylim = c(0, 10),
+  xlab = "PTA4 better ear (dB HL)", ylab = "Hearing ability 1 to 10", main = "PTA4 better ear > 25"))
+round(with(pta, cor.test(PTA4_better_ear, Ability))$estimate, 3)
+with(pta, cor.test(PTA4_better_ear, Ability))$p.value
+
+# HHIE, Ability
+with(pta, plot(HHIE_total, jitter(Ability), xlim = c(0, 40), ylim = c(0, 10),
+  xlab = "HHIE-S", ylab = "Hearing ability 1 to 10", main = "PTA4 better ear > 25"))
+round(with(pta, cor.test(HHIE_total, Ability))$estimate, 3)
+with(pta, cor.test(HHIE_total, Ability))$p.value
+```
+
+## PTA: Logistic regression with backwards elimination 
+```{r, echo=FALSE}
+# full model (28 predictors)
+m.pta <- glm(Purchased_HA ~ 
+  Age +  
+  PTA4_better_ear +
+  HHIE_total +
+  Ability +
+  Sex +
+  Edu +
+  Married +
+  Health +
+  QoL +
+  Help_neighbours +
+  Help_problems +
+  Concern +
+  Lonely +
+  Sub_Age_avg +
+  Age_stigma_avg +
+  HA_stigma_avg +
+  Accomp +
+  Soc_Suspect_HL +
+  Soc_Know_HL +
+  Soc_Discuss_HL +
+  Soc_Hearing_test +
+  Soc_Obtain_HA +
+  Soc_Sometimes_use +
+  Soc_Regular_use +
+  Soc_Very_positive +
+  Soc_Somewhat_positive +
+  Soc_Somewhat_negative +
+  Soc_Very_negative, 
+family = binomial("logit"), data = pta)
+```
+ 
+With a backwards elimination procedure, the final model is:
+```{r, echo=FALSE, results = 'hide'}
+# backwards elimination procedure
+step(object = m.pta, direction = c("backward"), trace = 1)
+```
+ 
+```{r, echo=FALSE}
+summary(glm(Purchased_HA ~ Age + HHIE_total + Health + HA_stigma_avg + 
+    Soc_Suspect_HL + Soc_Discuss_HL, family = binomial("logit"), 
+    data = pta))
+```
+ 
+## PTA: Net Reclassification Improvement  
+ 
+Proportion of people who purchased hearing aids
+```{r, echo=FALSE}
+table(pta$HA.Purchase)/length(pta[,1]) #0.1978752
+```
+ 
+"Basic" model: Age only
+```{r, echo=FALSE}
+m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = pta)
+
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(pta, select=c('Age')), type = 'response')
+
+summary(m.basic)
+```
+ 
+Table of NRI values for 27 "novel" predictors
+```{r, echo=FALSE, results='hide'}
+
+predictors <- c('PTA4_better_ear','HHIE_total','Ability','Sex','Edu','Married','Health','QoL',
+'Help_neighbours','Help_problems','Concern','Lonely',
+'Sub_Age_avg','Age_stigma_avg','HA_stigma_avg','Accomp',
+'Soc_Suspect_HL','Soc_Know_HL','Soc_Discuss_HL','Soc_Hearing_test',
+'Soc_Obtain_HA','Soc_Sometimes_use','Soc_Regular_use',
+'Soc_Very_positive','Soc_Somewhat_positive','Soc_Somewhat_negative','Soc_Very_negative')
+
+library(PredictABEL)
+
+for (i in 1:27) {
+
+new.formula <- as.formula(paste0("Purchased_HA ~ Age + ", predictors[i]))  
+m.new <- glm(new.formula, family = binomial("logit"), data = pta)
+
+new.fitted.results <- predict.glm(m.new, newdata = subset(pta, select=c('Age', predictors[i])), type = 'response')
+
+print(predictors[i])
+reclassification(data = pta, cOutcome = 134, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1978752, 1))
+}
+```
+ 
+|Predictor|NRI|p-value| 
+|-----|-----|-----|
+|PTA4_better_ear|	-0.000400|	0.989590|
+|HHIE_total	|0.140000	|0.003440|
+|Ability	|-0.008500	|0.824360|
+|Sex	|0.048500	|0.144430|
+|Edu	|-0.003200	|0.850050|
+|Married	|0.018600	|0.373270|
+|Health	|0.025300	|0.195670|
+|QoL	|0.031900	|0.233760|
+|Help_neighbours	|0.000300	|0.991080|
+|Help_problems	|0.015300	|0.435690|
+|Concern	|0.016900|	0.495400|
+|Lonely	|0.000000	|NA|
+|Sub_Age_avg	|0.000200	|0.988380|
+|Age_stigma_avg	|-0.018200|	0.517490|
+|HA_stigma_avg	|0.025500	|0.488240|
+|Accomp	|0.011700	|0.579330|
+|Soc_Suspect_HL	|0.054100	|0.145060|
+|Soc_Know_HL	|0.000000|	NA|
+|Soc_Discuss_HL	|0.006700	|0.699190|
+|Soc_Hearing_test	|0.015100	|0.422910|
+|Soc_Obtain_HA  	|0.006900	|0.728710|
+|Soc_Sometimes_use	|0.003700	|0.801540|
+|Soc_Regular_use	|0.005100	|0.781160|
+|Soc_Very_positive	|-0.001500	|0.968770|
+|Soc_Somewhat_positive	|-0.008200	|0.324350|
+|Soc_Somewhat_negative	|0.000300	|0.983420|
+|Soc_Very_negative	|-0.009700	|0.471530|
+
+# HHIE-S
+Include only participants with HHIE-S scores ≥ 10 (case count and %).
+```{r, echo=FALSE}
+rm(list = c('m.basic', 'm.new', 'm.pta', 'pta'))
+
+hhie <- subset(data2, HHIE_total > 9)
+length(hhie[,1])
+length(hhie[,1]) / length(data2[,1]) * 100
+```
+ 
+## HHIE-S: Logistic regression with backwards elimination
+```{r, echo=FALSE}
+
+# full model (28 predictors)
+m.hhie <- glm(Purchased_HA ~ 
+  Age +  
+  PTA4_better_ear +
+  HHIE_total +
+  Ability +
+  Sex +
+  Edu +
+  Married +
+  Health +
+  QoL +
+  Help_neighbours +
+  Help_problems +
+  Concern +
+  Lonely +
+  Sub_Age_avg +
+  Age_stigma_avg +
+  HA_stigma_avg +
+  Accomp +
+  Soc_Suspect_HL +
+  Soc_Know_HL +
+  Soc_Discuss_HL +
+  Soc_Hearing_test +
+  Soc_Obtain_HA +
+  Soc_Sometimes_use +
+  Soc_Regular_use +
+  Soc_Very_positive +
+  Soc_Somewhat_positive +
+  Soc_Somewhat_negative +
+  Soc_Very_negative, 
+family = binomial("logit"), data = hhie)
+```
+  
+With a backwards elimination procedure, the final model is:
+```{r, echo=FALSE, results = 'hide'}
+# backwards elimination procedure
+step(object = m.hhie, direction = c("backward"), trace = 1)
+```
+ 
+```{r, echo=FALSE}
+summary(glm(Purchased_HA ~ Age + PTA4_better_ear + HHIE_total + 
+    Ability + Sub_Age_avg + Soc_Suspect_HL + Soc_Very_positive, 
+    family = binomial("logit"), data = hhie))
+```
+   
+## HHIE-S: Net Reclassification Improvement 
+ 
+Proportion of people who purchased hearing aids
+```{r, echo=FALSE}
+table(hhie$HA.Purchase)/length(hhie[,1]) #0.1446886
+```
+ 
+"Basic" model: Age only
+```{r, echo=FALSE}
+m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = hhie)
+
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(hhie, select=c('Age')), type = 'response')
+
+summary(m.basic)
+``` 
+ 
+Table of NRI values for 27 "novel" predictors 
+```{r, echo=FALSE, results='hide'}
+for (i in 1:27) {
+
+new.formula <- as.formula(paste0("Purchased_HA ~ Age + ", predictors[i]))  
+m.new <- glm(new.formula, family = binomial("logit"), data = hhie)
+
+new.fitted.results <- predict.glm(m.new, newdata = subset(hhie, select=c('Age', predictors[i])), type = 'response')
+
+print(predictors[i])
+reclassification(data = hhie, cOutcome = 134, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1446886, 1))
+}
+```
+ 
+|Predictor|NRI|p-value| 
+|-----|-----|-----| 
+|PTA4_better_ear|	0.1009|	0.01164|
+|HHIE_total|	0.0702|	0.07463|
+|Ability|	-0.0019|	0.95844|
+|Sex	|-0.0054	|0.6254|
+|Edu	|-0.0071	|0.6698|
+|Married	|0.0055	|0.5760|
+|Health	|0.0118	|0.4871|
+|QoL	|-0.0043	|0.7918|
+|Help_neighbours|	0.0000|	NA|
+|Help_problems	|-0.0168	|0.2221|
+|Concern	|0.0000|	NA|
+|Lonely	|0.0000|	NA|
+|Sub_Age_avg	|0.0305	|0.2274|
+|Age_stigma_avg|	-0.0168|	0.2192|
+|HA_stigma_avg|	-0.0181	|0.4279|
+|Accomp|	0.0061|	0.5924|
+|Soc_Suspect_HL|	-0.0255|	0.2464|
+|Soc_Know_HL	|0.0075	|0.0079|
+|Soc_Discuss_HL|	0.0000|	NA|
+|Soc_Hearing_test	|-0.0211|	0.3117|
+|Soc_Obtain_HA  	|-0.0020|	0.8374|
+|Soc_Sometimes_use	|0.0120|	0.2425|
+|Soc_Regular_use	|0.0076|	0.3039|
+|Soc_Very_positive	|-0.0097|	0.7279|
+|Soc_Somewhat_positive|	0.0003	|0.9807|
+|Soc_Somewhat_negative|	0.0087	|0.2455|
+|Soc_Very_negative	|0.0054	|0.0250|
+ 
+# Hearing ability (scale of 1 to 10)
+Include only participants with self-reported overall hearing ability scores ≤ 7 (case count and %).
+```{r, echo=FALSE}
+rm(list = c('hhie', 'm.basic', 'm.new', 'm.hhie'))
+
+ab <- subset(data2, Ability < 8)
+length(ab[,1])
+length(ab[,1]) / length(data2[,1]) * 100
+```
+
+## Hearing ability: Logistic regression with backwards elimination
+```{r, echo=FALSE}
+# full model (28 predictors)
+m.ab <- glm(Purchased_HA ~ 
+  Age +  
+  PTA4_better_ear +
+  HHIE_total +
+  Ability +
+  Sex +
+  Edu +
+  Married +
+  Health +
+  QoL +
+  Help_neighbours +
+  Help_problems +
+  Concern +
+  Lonely +
+  Sub_Age_avg +
+  Age_stigma_avg +
+  HA_stigma_avg +
+  Accomp +
+  Soc_Suspect_HL +
+  Soc_Know_HL +
+  Soc_Discuss_HL +
+  Soc_Hearing_test +
+  Soc_Obtain_HA +
+  Soc_Sometimes_use +
+  Soc_Regular_use +
+  Soc_Very_positive +
+  Soc_Somewhat_positive +
+  Soc_Somewhat_negative +
+  Soc_Very_negative, 
+family = binomial("logit"), data = ab)
+```
+ 
+With a backwards elimination procedure, the final model is:
+```{r, echo=FALSE, results = 'hide'}
+# backwards elimination procedure
+step(object = m.ab, direction = c("backward"), trace = 1)
+```
+ 
+```{r, echo=FALSE}
+summary(glm(Purchased_HA ~ Age + PTA4_better_ear + HHIE_total + 
+    Sub_Age_avg + Soc_Hearing_test + Soc_Very_positive, family = binomial("logit"), 
+    data = ab))
+```
+    
+## Hearing ability: Net Reclassification Improvement
+Proportion of people who purchased hearing aids
+```{r, echo=FALSE}
+table(ab$HA.Purchase)/length(ab[,1]) #0.1440443
+```
+ 
+"Basic" model: Age only
+```{r, echo=FALSE}
+m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = ab)
+
+basic.fitted.results <- predict.glm(m.basic, newdata = subset(ab, select=c('Age')), type = 'response')
+
+summary(m.basic)
+``` 
+ 
+Table of NRI values for 27 "novel" predictors 
+```{r, echo=FALSE, results='hide'}
+for (i in 1:27) {
+
+new.formula <- as.formula(paste0("Purchased_HA ~ Age + ", predictors[i]))  
+m.new <- glm(new.formula, family = binomial("logit"), data = ab)
+
+new.fitted.results <- predict.glm(m.new, newdata = subset(ab, select=c('Age', predictors[i])), type = 'response')
+
+print(predictors[i])
+reclassification(data = ab, cOutcome = 134, predrisk1 = basic.fitted.results, predrisk2 = new.fitted.results, cutoff = c(0, 0.1440443, 1))
+}
+```
+ 
+|Predictor|NRI|p-value| 
+|-----|-----|-----| 
+|PTA4_better_ear|	0.1374|	0.00064|
+|HHIE_total	|0.0679|	0.09917|
+|Ability	|-0.0382|	0.2205|
+|Sex	|0.0023|	0.8450|
+|Edu	|-0.0010|	0.9464|
+|Married	|0.0131	|0.2092|
+|Health	|-0.0032	|0.8333|
+|QoL	|0.0022	|0.7537|
+|Help_neighbours	|-0.0160	|0.4712|
+|Help_problems	|0.0022|	0.7537|
+|Concern	|-0.0010	|0.9353|
+|Lonely	|0.0043	|0.0450|
+|Sub_Age_avg	|0.0258|	0.2611|
+|Age_stigma_avg	|-0.0255	|0.1120|
+|HA_stigma_avg	|-0.0041	|0.8639|
+|Accomp	|0.0034|	0.8495|
+|Soc_Suspect_HL	|-0.0050|	0.7803|
+|Soc_Know_HL|	0.0076	|0.3079|
+|Soc_Discuss_HL	|0.0108|	0.1582|
+|Soc_Hearing_test	|0.0075	|0.7954|
+|Soc_Obtain_HA  	|-0.0011|	0.9567|
+|Soc_Sometimes_use	|-0.0159	|0.2803|
+|Soc_Regular_use	|-0.0063	|0.7725|
+|Soc_Very_positive	|0.0034	|0.9088|
+|Soc_Somewhat_positive	|0.0141	|0.0748|
+|Soc_Somewhat_negative	|0.0067	|0.5843|
+|Soc_Very_negative	|-0.0083	|0.5967| 
+ 
+ 
