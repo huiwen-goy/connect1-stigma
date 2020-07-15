@@ -34,7 +34,7 @@
 | HHIE_total	| Q32. Does a hearing problem cause you to feel embarrassed when meeting new people? |
 | HHIE_total	| Q33. Does a hearing problem cause you to feel frustrated when talking to members of your family? |
 | HHIE_total	| Q34. Do you have difficulty hearing when someone speaks in a whisper? |
-| HHIE_total	| Q35. Do you feel handicapped by a hearing problem. |
+| HHIE_total	| Q35. Do you feel handicapped by a hearing problem? |
 | HHIE_total	| Q36. Does a hearing problem cause you difficulty when visiting friends, relatives, or neighbours? |
 | HHIE_total	| Q37. Does a hearing problem cause you to attend social activities less often than you would like? |
 | HHIE_total	| Q38. Does a hearing problem cause you to have arguments with family members? |
