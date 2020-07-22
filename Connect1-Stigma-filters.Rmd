@@ -8,18 +8,63 @@ output:
    
 # Overview of results 
 ![](Summary.jpg)
+  
+**Load libraries**
+```{r, echo=FALSE, message=FALSE}
+
+library(ggplot2)
+library(psych)
+library(PredictABEL)
+library(caret)
+library(e1071)
+
+# Fields' script for calculating different R-squared's
+pseudoR2s <- function(LogModel) {
+  dev <- LogModel$deviance
+  nullDev <- LogModel$null.deviance
+  modelN <- length(LogModel$fitted.values)
+  R.l <- 1 - dev / nullDev
+  R.cs <- 1 - exp(-(nullDev - dev) / modelN)
+  R.n <- R.cs / (1 -(exp(-(nullDev / modelN))))
+  cat("Pseudo R^2 for Logistic Regression\n")
+  cat("Hosmer and Lemeshow", R.l, "\n")
+  cat("Cox and Snell", R.cs, "\n")
+  cat("Nagelkerke", R.n, "\n")
+} 
+```
    
-# Preparing dataset for analyses
-Steps: Read data, rename/recode variables, exclude rows with missing data for 28 predictors and 1 outcome.
+# Dataset preparation and descriptive statistics
+  
+Read data: Connect_Data_20191025.csv
+  
+Remove those with missing age/sex, who are too young, and who have HA experience.
 ```{r, echo=FALSE, results='hide'}
+
 orig <- read.csv("Connect_Data_20191025.csv", header=TRUE)
 
-# must have known age and sex, 50+ years old, never used a HA
+# must have known age and sex (134 either/both unknown), 50+ years old (6 too young), never used a HA (45 are experienced, 100+ are NA); note that some cases have more than one strike
 data <- orig[which(is.na(orig$Q44) == FALSE & is.na(orig$Q43) == FALSE & orig$Q44 > 49.5 & orig$Q42 == "No"), ]
 
 # tidying up
 rm(list = c("orig"))
+```
+   
+Get some descriptives for the Participants section of the manuscript.
+```{r, eval=FALSE, include=FALSE}
 
+# descriptives for paper
+
+tapply(data$Q44, list(Sex = data$Q43), mean)
+tapply(data$Q44, list(Sex = data$Q43), sd)
+tapply(data$Q44, list(Sex = data$Q43), min)
+tapply(data$Q44, list(Sex = data$Q43), max)
+
+```
+  
+Rename variables, recode variables, and remove rows containing any missing cells for 28 predictors.
+```{r, echo=FALSE, results='hide'}
+
+# more user-friendly column names
 data$Age <- data$Q44
 
 data$Sex <- c(NA)
@@ -170,8 +215,121 @@ data2 <- subset(data,
 
 rm(list = c("data")) # tidying up
 ```
+  
+Get numbers for Table 1 in manuscript.
+```{r, eval=FALSE, include=FALSE}
 
-```{r, echo=FALSE, results='hide'}
+# Repeat for SD, Min, Max
+#tapply(data2$Age, list(Group = data2$HA.Purchase), mean) 
+mean(data2$Age) 
+mean(data2$PTA4_better_ear) 
+mean(data2$HHIE_total)  
+mean(data2$Ability) 
+mean(data2$Health)
+mean(data2$QoL) 
+mean(data2$Edu)
+mean(data2$Help_neighbours) 
+mean(data2$Help_problems) 
+mean(data2$Concern) 
+mean(data2$Lonely) 
+mean(data2$Sub_Age_avg) 
+mean(data2$Age_stigma_avg) 
+mean(data2$HA_stigma_avg)
+
+#table(data2$Sex, data2$HA.Purchase) 
+prop.table(table(data2$Sex))*100 
+prop.table(table(data2$Married))*100
+prop.table(table(data2$Accomp))*100 
+prop.table(table(data2$Soc_Suspect_HL))*100
+prop.table(table(data2$Soc_Know_HL))*100
+prop.table(table(data2$Soc_Discuss_HL))*100
+prop.table(table(data2$Soc_Hearing_test))*100
+prop.table(table(data2$Soc_Obtain_HA))*100 
+prop.table(table(data2$Soc_Sometimes_use))*100
+prop.table(table(data2$Soc_Regular_use))*100
+prop.table(table(data2$Soc_Very_positive))*100
+prop.table(table(data2$Soc_Somewhat_positive))*100
+prop.table(table(data2$Soc_Somewhat_negative))*100
+prop.table(table(data2$Soc_Very_negative))*100
+
+```
+    
+Plot audiogram for Figure 2 in manuscript.
+```{r, eval=FALSE, include=FALSE}
+
+# New dataset with better and worse ears
+audio <- data2[, c(1, 83:94)]
+
+audio$Better_250 <- pmin(audio$LE250c, audio$RE250c)
+audio$Better_500 <- pmin(audio$LE500c, audio$RE500c)
+audio$Better_1000 <- pmin(audio$LE1000c, audio$RE1000c)
+audio$Better_2000 <- pmin(audio$LE2000c, audio$RE2000c)
+audio$Better_4000 <- pmin(audio$LE4000c, audio$RE4000c)
+audio$Better_8000 <- pmin(audio$LE8000c, audio$RE8000c)
+
+audio$Worse_250 <- pmax(audio$LE250c, audio$RE250c)
+audio$Worse_500 <- pmax(audio$LE500c, audio$RE500c)
+audio$Worse_1000 <- pmax(audio$LE1000c, audio$RE1000c)
+audio$Worse_2000 <- pmax(audio$LE2000c, audio$RE2000c)
+audio$Worse_4000 <- pmax(audio$LE4000c, audio$RE4000c)
+audio$Worse_8000 <- pmax(audio$LE8000c, audio$RE8000c)
+
+head(audio)
+
+# Specify x-axis datapoints
+freq <- c(250, 500, 1000, 2000, 4000, 8000)
+
+# Calculate y-axis means and error bars for plotting
+better.m <- as.vector(colMeans(audio[, c(14:19)], na.rm=TRUE))
+better.se <- as.vector(sapply(X = audio[, c(14:19)], FUN = sd, na.rm=TRUE)/(1868^0.5))
+better.sd <- as.vector(sapply(X = audio[, c(14:19)], FUN = sd, na.rm=TRUE))
+worse.m <- as.vector(colMeans(audio[, c(20:25)], na.rm=TRUE))
+worse.se <- as.vector(sapply(X = audio[, c(20:25)], FUN = sd, na.rm=TRUE)/(1868^0.5))
+worse.sd <- as.vector(sapply(X = audio[, c(20:25)], FUN = sd, na.rm=TRUE))
+
+# Combine x and y points into dataframe for plotting
+audio2 <- data.frame(rep(freq, 2))
+colnames(audio2) <- c('freq')
+audio2$ear <- c(rep('Better', 6), rep('Worse', 6))
+audio2$threshold <- rep(NA, 12)
+audio2$threshold[1:6] <- better.m
+audio2$threshold[7:12] <- worse.m
+audio2$sd <- rep(NA, 12)
+audio2$sd[1:6] <- better.sd
+audio2$sd[7:12] <- worse.sd
+
+# exported as 6 by 9
+ggplot(data = audio2, aes(x = freq, y = threshold, group = ear, shape = ear)) + 
+  geom_point(size = 3) +
+    scale_shape_manual(name = "Ear", values = c(19, 17)) +
+  geom_errorbar(data = audio2, 
+    aes(x = freq, ymin = (threshold - sd), ymax = (threshold + sd)), 
+    width = 0.05, position = position_dodge(0.01)) +
+  geom_line(aes(linetype = ear), color = "black") + 
+    scale_linetype_manual(values = c("solid", "longdash")) + 
+    guides(linetype = FALSE) + 
+  labs(x = "Frequency (Hz)", y = "Threshold (dB HL)") +
+  scale_y_reverse(limits = c(80, 0), breaks = seq(0, 80, by = 10)) + 
+  scale_x_log10(breaks = unique(audio2$freq), labels = unique(c('250', '500', '1000', '2000', '4000', '8000'))) +
+  theme_bw() + 
+  theme(axis.title = element_text(size = 25), 
+    axis.text = element_text(colour = "black", size = 20), 
+    text = element_text(size = 20)) + 
+  theme(panel.background = element_rect(color = "black", size = 1)) + 
+  theme(legend.position = c(0.12, 0.15)) + 
+    theme(legend.background = element_rect(fill = "white", color = "black"))
+
+rm(list = c('audio', 'audio2', 'better.m', 'better.sd', 'better.se', 
+     'worse.m', 'worse.sd', 'worse.se', 'freq'))
+
+```
+   
+# Participant overlap according to three inclusion criteria
+
+## All participants
+  
+```{r, eval=FALSE, include=FALSE}
+
 # numbers for Venn diagram: all participants with complete data
 pta <- subset(data2, PTA4_better_ear > 25.0)
 hhie <- subset(data2, HHIE_total > 9)
@@ -190,7 +348,8 @@ rm(check)
 
 ```
    
-```{r, echo=FALSE, results='hide'}
+```{r, eval=FALSE, include=FALSE}
+
 # numbers for Venn diagram: participants who obtained HA
 ha <- subset(data2, HA.Purchase == "Yes")
 
@@ -213,19 +372,19 @@ rm(list = c('check.all', 'check.pta', 'check.hhie', 'check.ab', 'check.pta.hhie'
 
 ```
     
-## Participant overlap according to three inclusion criteria (all participants) 
 ![](Venn_diagram_all.jpg)
 
-## Participant overlap according to three inclusion criteria (only those who purchased HA)
+## Only those who purchased HA
 ![](Venn_diagram_HA.jpg)
   
-## Correlation among hearing variables
+# Correlation among variables
+
+## PTA, HHIE, Hearing Ability
 ```{r, echo=FALSE, results='hide', fig.keep='all'}
+
 with(data2, cor.test(PTA4_better_ear, HHIE_total)) #r = 0.3408834, p-value < 2.2e-16
 with(data2, cor.test(PTA4_better_ear, Ability)) #r = -0.3502925, p-value < 2.2e-16
 with(data2, cor.test(HHIE_total, Ability)) #r = -0.6002793, p-value < 2.2e-16
-
-library(ggplot2)
 
 data2$col.alpha <- rep(0.5, nrow(data2))
 data2$col.alpha[data2$Purchased_HA == 1] <- 1
@@ -278,6 +437,29 @@ ggplot(data2, aes(x = jitter(HHIE_total, factor = 1.25), y = jitter(Ability, fac
     text = element_text(size = 20))
 
 ```
+
+Note: A few participants bought HA despite good PTA and/or HHIE scores.
+```{r, eval=FALSE, include=FALSE}
+
+# Who bought HA with good PTA and HHIE?
+
+table(data2$HA.Purchase)
+
+ha <- subset(data2, HA.Purchase == "Yes" & PTA4_better_ear <= 25)
+audio <- ha[, c('ID', 'HA.Purchase', 'Age', 'HHIE_total', 'PTA4_left', 'PTA4_right', 'PTA4_better_ear', 
+  'LE250c',	'LE500c', 'LE1000c', 'LE2000c', 'LE4000c', 'LE8000c', 
+  'RE250c', 'RE500c', 'RE1000c', 'RE2000c', 'RE4000c', 'RE8000c')]
+```
+
+## Subjective Age, Age Stigma, and HA Stigma
+```{r, echo=FALSE}
+
+lowerMat(cor(data.frame(data2$Q1_Corrected, data2$Q2_Corrected, data2$Q3_Corrected), use="complete.obs", method="pearson"))
+
+lowerMat(cor(data.frame(data2$Q4_Corrected, data2$Q5_Corrected, data2$Q6_Corrected, data2$Q7_Corrected, data2$Q8_Corrected), use="complete.obs", method="pearson"))
+
+lowerMat(cor(data.frame(data2$Q9_Corrected, data2$Q10_Corrected, data2$Q11_Corrected, data2$Q12_Corrected), use="complete.obs", method="pearson"))
+```
   
 # PTA
 Include only participants with PTA4 > 25 dB HL in the better ear (case count and %).
@@ -286,10 +468,16 @@ pta <- subset(data2, PTA4_better_ear > 25.0)
 length(pta[,1])
 length(pta[,1]) / length(data2[,1]) * 100
 ```
-  
-## PTA: Logistic regression with backwards elimination 
+ 
+Proportion of people who purchased hearing aids
 ```{r, echo=FALSE}
-# full model (28 predictors)
+table(pta$HA.Purchase)/length(pta[,1]) #0.1978752
+```
+    
+## PTA: Logistic regression with backwards elimination 
+The full model contains 28 predictors.
+```{r, evaluate = FALSE, include = FALSE}
+
 m.pta <- glm(Purchased_HA ~ 
   Age +  
   PTA4_better_ear +
@@ -321,14 +509,11 @@ m.pta <- glm(Purchased_HA ~
   Soc_Very_negative, 
 family = binomial("logit"), data = pta)
 ```
- 
+  
 With a backwards elimination procedure, the final model is:
-```{r, echo=FALSE, results = 'hide'}
-# backwards elimination procedure
-step(object = m.pta, direction = c("backward"), trace = 1)
-```
- 
 ```{r, echo=FALSE, fig.show='hide', message = FALSE}
+
+# step(object = m.pta, direction = c("backward"), trace = 1)
 
 # Only including significant predictors after backwards elimination procedure (dropped additional variables)
 
@@ -337,43 +522,23 @@ m.final <- glm(Purchased_HA ~ Age + HHIE_total + HA_stigma_avg + Soc_Suspect_HL,
 
 summary(m.final)
 
-# Fields' script for calculating different R-squared's
-pseudoR2s <- function(LogModel) {
-  dev <- LogModel$deviance
-  nullDev <- LogModel$null.deviance
-  modelN <- length(LogModel$fitted.values)
-  R.l <- 1 - dev / nullDev
-  R.cs <- 1 - exp(-(nullDev - dev) / modelN)
-  R.n <- R.cs / (1 -(exp(-(nullDev / modelN))))
-  cat("Pseudo R^2 for Logistic Regression\n")
-  cat("Hosmer and Lemeshow", R.l, "\n")
-  cat("Cox and Snell", R.cs, "\n")
-  cat("Nagelkerke", R.n, "\n")
-} 
 pseudoR2s(m.final)
 
 pred <- predict.glm(m.final, newdata = subset(pta, select=c('Age', 'HHIE_total', 'HA_stigma_avg', 'Soc_Suspect_HL')), type = 'response')
 pred.binary <- ifelse(pred > 0.1978752, 1, 0)
     
-library(PredictABEL)
 plotROC(data = pta, 
   cOutcome = 134, 
   predrisk = pred.binary,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+# AUC [95% CI] for the model 1 :  0.621 [ 0.577  -  0.664 ]
 
-library(caret)
 confusionMatrix(data = as.factor(pred.binary), reference = as.factor(pta$Purchased_HA), positive = c("1"))
 ```
   
 ## PTA: Net Reclassification Improvement  
- 
-Proportion of people who purchased hearing aids
-```{r, echo=FALSE}
-table(pta$HA.Purchase)/length(pta[,1]) #0.1978752
-```
- 
 "Basic" model: Age only
 ```{r, echo=FALSE}
 m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = pta)
@@ -384,7 +549,7 @@ summary(m.basic)
 ```
  
 Table of NRI values for 27 "novel" predictors
-```{r, echo=FALSE, results='hide'}
+```{r, eval = FALSE, include = FALSE}
 
 predictors <- c('PTA4_better_ear','HHIE_total','Ability','Sex','Edu','Married','Health','QoL',
 'Help_neighbours','Help_problems','Concern','Lonely',
@@ -436,14 +601,18 @@ reclassification(data = pta, cOutcome = 134, predrisk1 = basic.fitted.results, p
 |Soc_Very_negative	|-0.009700	|0.471530|
   
 ## PTA: Evaluation of regression model containing NRI predictors  
-```{r, echo=FALSE, fig.show='hide'}
+```{r, echo=FALSE, fig.show='hide', message = FALSE}
+
 m.nri <- glm(Purchased_HA ~ Age + HHIE_total, family = binomial("logit"), data = pta)
 summary(m.nri)
+
+exp(coef(m.nri))
+exp(cbind(OR = coef(m.nri), confint(m.nri)))
 
 pseudoR2s(m.nri)
 
 pred.nri <- predict.glm(m.nri, newdata = subset(pta, select=c('Age', 'HHIE_total')), type = 'response')
-pred.nri.binary <- ifelse(pred > 0.1978752, 1, 0)
+pred.nri.binary <- ifelse(pred.nri > 0.1978752, 1, 0)
 
 plotROC(data = pta, 
   cOutcome = 134, 
@@ -451,6 +620,7 @@ plotROC(data = pta,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+#AUC [95% CI] for the model 1 :  0.629 [ 0.585  -  0.673 ] 
 
 confusionMatrix(data = as.factor(pred.nri.binary), reference = as.factor(pta$Purchased_HA), positive = c("1"))
 ```
@@ -463,9 +633,15 @@ length(hhie[,1])
 length(hhie[,1]) / length(data2[,1]) * 100
 ```
  
-## HHIE-S: Logistic regression with backwards elimination
+Proportion of people who purchased hearing aids
 ```{r, echo=FALSE}
-# full model (28 predictors)
+table(hhie$HA.Purchase)/length(hhie[,1]) #0.1446886
+```
+   
+## HHIE-S: Logistic regression with backwards elimination
+The full model contains 28 predictors.
+```{r, evaluate = FALSE, include = FALSE}
+
 m.hhie <- glm(Purchased_HA ~ 
   Age +  
   PTA4_better_ear +
@@ -499,13 +675,11 @@ family = binomial("logit"), data = hhie)
 ```
   
 With a backwards elimination procedure, the final model is:
-```{r, echo=FALSE, results = 'hide'}
-# backwards elimination procedure
-step(object = m.hhie, direction = c("backward"), trace = 1)
-```
- 
 ```{r, echo=FALSE, fig.show='hide'}
+
+# step(object = m.hhie, direction = c("backward"), trace = 1)
 # Only including significant predictors after backwards elimination procedure (dropped additional variables)
+
 m.final <- glm(Purchased_HA ~ Age + PTA4_better_ear + HHIE_total + Sub_Age_avg, 
     family = binomial("logit"), data = hhie)
 
@@ -522,17 +696,12 @@ plotROC(data = hhie,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+# AUC [95% CI] for the model 1 :  0.665 [ 0.625  -  0.705 ] 
 
 confusionMatrix(data = as.factor(pred.binary), reference = as.factor(hhie$Purchased_HA), positive = c("1"))
 ```
 
 ## HHIE-S: Net Reclassification Improvement 
- 
-Proportion of people who purchased hearing aids
-```{r, echo=FALSE}
-table(hhie$HA.Purchase)/length(hhie[,1]) #0.1446886
-```
- 
 "Basic" model: Age only
 ```{r, echo=FALSE}
 m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = hhie)
@@ -543,7 +712,8 @@ summary(m.basic)
 ``` 
  
 Table of NRI values for 27 "novel" predictors 
-```{r, echo=FALSE, results='hide'}
+```{r, eval = FALSE, include = FALSE}
+
 for (i in 1:27) {
 
 new.formula <- as.formula(paste0("Purchased_HA ~ Age + ", predictors[i]))  
@@ -587,15 +757,19 @@ reclassification(data = hhie, cOutcome = 134, predrisk1 = basic.fitted.results, 
 |Soc_Very_negative	|0.0054	|0.0250|
  
 ## HHIE: Evaluation of regression model containing NRI predictors
-```{r, echo=FALSE, fig.show='hide'}
+```{r, echo=FALSE, fig.show='hide', message = FALSE}
+
 m.nri <- glm(Purchased_HA ~ Age + PTA4_better_ear + Soc_Know_HL + Soc_Very_negative, 
   family = binomial("logit"), data = hhie)
 summary(m.nri)
 
+exp(coef(m.nri))
+exp(cbind(OR = coef(m.nri), confint(m.nri)))
+
 pseudoR2s(m.nri)
 
 pred.nri <- predict.glm(m.nri, newdata = subset(hhie, select=c('Age', 'PTA4_better_ear', 'Soc_Know_HL', 'Soc_Very_negative')), type = 'response')
-pred.nri.binary <- ifelse(pred > 0.1446886, 1, 0)
+pred.nri.binary <- ifelse(pred.nri > 0.1446886, 1, 0)
 
 plotROC(data = hhie, 
   cOutcome = 134, 
@@ -603,6 +777,7 @@ plotROC(data = hhie,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+# AUC [95% CI] for the model 1 :  0.666 [ 0.626  -  0.706 ]
 
 confusionMatrix(data = as.factor(pred.nri.binary), reference = as.factor(hhie$Purchased_HA), positive = c("1"))
 
@@ -615,10 +790,16 @@ ab <- subset(data2, Ability < 8)
 length(ab[,1])
 length(ab[,1]) / length(data2[,1]) * 100
 ```
-
-## Hearing ability: Logistic regression with backwards elimination
+  
+Proportion of people who purchased hearing aids
 ```{r, echo=FALSE}
-# full model (28 predictors)
+table(ab$HA.Purchase)/length(ab[,1]) #0.1440443
+```
+  
+## Hearing ability: Logistic regression with backwards elimination
+The full model contains 28 predictors.
+```{r, evaluate = FALSE, include = FALSE}
+
 m.ab <- glm(Purchased_HA ~ 
   Age +  
   PTA4_better_ear +
@@ -652,13 +833,11 @@ family = binomial("logit"), data = ab)
 ```
  
 With a backwards elimination procedure, the final model is:
-```{r, echo=FALSE, results = 'hide'}
-# backwards elimination procedure
-step(object = m.ab, direction = c("backward"), trace = 1)
-```
- 
 ```{r, echo=FALSE, fig.show='hide'}
+
+# step(object = m.ab, direction = c("backward"), trace = 1)
 # Only including significant predictors after backwards elimination procedure (dropped additional variables)
+
 m.final <- glm(Purchased_HA ~ Age + PTA4_better_ear + HHIE_total + Sub_Age_avg + Soc_Hearing_test, 
   family = binomial("logit"), data = ab)
 
@@ -675,16 +854,12 @@ plotROC(data = ab,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+# AUC [95% CI] for the model 1 :  0.752 [ 0.714  -  0.79 ] 
 
 confusionMatrix(data = as.factor(pred.binary), reference = as.factor(ab$Purchased_HA), positive = c("1"))
 ```
    
 ## Hearing ability: Net Reclassification Improvement
-Proportion of people who purchased hearing aids
-```{r, echo=FALSE}
-table(ab$HA.Purchase)/length(ab[,1]) #0.1440443
-```
- 
 "Basic" model: Age only
 ```{r, echo=FALSE}
 m.basic <- glm(Purchased_HA ~ Age, family = binomial("logit"), data = ab)
@@ -695,7 +870,8 @@ summary(m.basic)
 ``` 
  
 Table of NRI values for 27 "novel" predictors 
-```{r, echo=FALSE, results='hide'}
+```{r, eval = FALSE, include = FALSE}
+
 for (i in 1:27) {
 
 new.formula <- as.formula(paste0("Purchased_HA ~ Age + ", predictors[i]))  
@@ -739,14 +915,18 @@ reclassification(data = ab, cOutcome = 134, predrisk1 = basic.fitted.results, pr
 |Soc_Very_negative	|-0.0083	|0.5967| 
  
 ## Hearing ability: Evaluation of regression model containing NRI predictors
-```{r, echo=FALSE, fig.show='hide'}
+```{r, echo=FALSE, fig.show='hide', message = FALSE}
+
 m.nri <- glm(Purchased_HA ~ Age + PTA4_better_ear + Lonely, family = binomial("logit"), data = ab)
 summary(m.nri)
+
+exp(coef(m.nri))
+exp(cbind(OR = coef(m.nri), confint(m.nri)))
 
 pseudoR2s(m.nri)
 
 pred.nri <- predict.glm(m.nri, newdata = subset(ab, select=c('Age', 'PTA4_better_ear', 'Lonely')), type = 'response')
-pred.nri.binary <- ifelse(pred > 0.1440443, 1, 0)
+pred.nri.binary <- ifelse(pred.nri > 0.1440443, 1, 0)
 
 plotROC(data = ab, 
   cOutcome = 134, 
@@ -754,6 +934,7 @@ plotROC(data = ab,
   plottitle = "ROC plot", 
   xlabel = "1 - Specificity", 
   ylabel = "Sensitivity")
+# AUC [95% CI] for the model 1 :  0.674 [ 0.634  -  0.713 ] 
 
 confusionMatrix(data = as.factor(pred.nri.binary), reference = as.factor(ab$Purchased_HA), positive = c("1"))
 ```  
