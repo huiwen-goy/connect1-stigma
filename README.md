@@ -30,6 +30,10 @@ HTML files in the /doc folder show the distributions of three hearing measures a
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html)
 
+Draft method and results:
+
+[https://huiwen-goy.github.io/connect1-stigma/methods_results.html](https://huiwen-goy.github.io/connect1-stigma/methods_results.html)
+
 5. Random forest:
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html)
