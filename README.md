@@ -26,15 +26,18 @@ HTML files in the /doc folder show the distributions of three hearing measures a
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html)
 
-4. Classification tree:
+4a. Classification tree (753 participants with complete data):
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html)
 
-Draft method and results:
+4b. Classification tree (1396 participants, some with missing data):
 
-[https://huiwen-goy.github.io/connect1-stigma/methods_results.html](https://huiwen-goy.github.io/connect1-stigma/methods_results.html)
+
 
 5. Random forest:
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html)
 
+Draft method and results for classification tree analysis:
+
+[https://huiwen-goy.github.io/connect1-stigma/methods_results.html](https://huiwen-goy.github.io/connect1-stigma/methods_results.html)
