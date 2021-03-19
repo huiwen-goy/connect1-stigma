@@ -1,45 +1,21 @@
 #### About this project
  
-The goal of this project was to examine how hearing, health and social factors (especially stigma) predict a person's likelihood of purchasing hearing aids after a first visit to a hearing clinic. 
+The goal of this project was to examine how well hearing, health and social factors predicted a person's decision to purchase hearing aids after a first visit to a hearing clinic. 
  
 #### About the data
  
-The original dataset contained 4300+ survey responses. After cleaning the data and only including cases that had no missing data for 28 variables of interest and 1 outcome, there were 1869 responses left. The variables are listed in the Questionnaire.md file. 
+The original dataset contained 4300+ survey responses. After cleaning the data, there were 3312 responses left. Of these 3312 responses, 1396 were from participants who had a PTA of 25 or greater in their better ear. All 1396 responses had complete data for the outcome measure of hearing aid purchase, but only 753 responses had complete data across 28 predictors of interest.
  
-#### About the code
- 
-The cleaning.Rmd file contains the code for cleaning the original dataset, including: merging data from questionnaire responses, clinic measurements and consent forms; finding and excluding duplicated participants; finding and cleaning data transcription errors, and transforming responses into a format that was appropriate for numerical analyses.
- 
-HTML files in the /doc folder show the distributions of three hearing measures and the results for four types of analyses. The links below will open the HTML files.
- 
-#### Results
+#### Analyses and results
 
-1. Distribution of hearing measures:
- 
-[https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_criteria.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_criteria.html)
-
-2. Logistic regression with backwards elimination:
+1. Logistic regression with backwards elimination:
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_LR.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_LR.html)
 
-3. Net Reclassification Index:
+2. Net Reclassification Index:
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html)
 
-4. Classification tree (753 participants with complete data):
+3. Classification tree:
 
 [https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree.html)
-
-   Classification tree (1396 participants, some with missing data):
-
-[https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree_missing.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_tree_missing.html)
-
-5. Random forest:
-
-[https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf.html)
-
-#### Report
-
-Draft method and results for classification tree analysis:
-
-[https://huiwen-goy.github.io/connect1-stigma/methods_results.html](https://huiwen-goy.github.io/connect1-stigma/methods_results.html)
