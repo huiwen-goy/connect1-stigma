@@ -9,16 +9,16 @@ The original dataset contained 4300+ survey responses. After cleaning the data a
 #### About the code
  
 The R file contains code for:  
-a) re-coding variables; e.g. converting categorical variables with multiple categories to binary variables /n
-b) re-naming variables for to make them more user-friendly; e.g. Q55 -> Lonely 
-c) selecting observations according to certain criteria 
-d) getting counts and descriptive statistics 
-e) calculating correlations among survey items
-f) calculating and plotting group audiograms 
-g) three types of analysis:   
-  i) logistic regression  
-  ii) net reclassification index followed by logistic regression  
-  iii) classification tree and tree plot  
+a) re-coding variables; e.g. converting categorical variables with multiple categories to binary variables  
+b) re-naming variables for to make them more user-friendly; e.g. Q55 -> Lonely   
+c) selecting observations according to certain criteria   
+d) getting counts and descriptive statistics   
+e) calculating correlations among survey items  
+f) calculating and plotting group audiograms   
+g) three types of analysis:     
+  i) logistic regression    
+  ii) net reclassification index followed by logistic regression    
+  iii) classification tree and tree plot    
  
 #### Reports: Methods, results, and conclusions
 
