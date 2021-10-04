@@ -13,7 +13,3 @@ The original dataset contained 4300+ survey responses. After cleaning the data a
 2. [Net Reclassification Index](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html)
 
 3. [Classification tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_Tree.html)
-
-#### Writing
-
-[Draft methods and results, March 26 2021](https://huiwen-goy.github.io/connect1-stigma/Connect1-Stigma_tree_method_results_2021.03.26.pdf)
