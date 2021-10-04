@@ -16,9 +16,9 @@ d) getting counts and descriptive statistics
 e) calculating correlations among survey items  
 f) calculating and plotting group audiograms   
 g) three types of analysis:     
-    i) logistic regression    
-    ii) net reclassification index followed by logistic regression    
-    iii) classification tree and tree plot    
+&nbsp;&nbsp;&nbsp;&nbsp; i) logistic regression    
+&nbsp;&nbsp;&nbsp;&nbsp; ii) net reclassification index followed by logistic regression    
+&nbsp;&nbsp;&nbsp;&nbsp; iii) classification tree and tree plot    
  
 #### Reports: Methods, results, and conclusions
 
