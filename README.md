@@ -27,3 +27,5 @@ g) three types of analysis:
 2. [Net Reclassification Index](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html)
 
 3. [Classification tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_Tree.html)
+
+4. [Random forest](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf-2021-02-11.html)
