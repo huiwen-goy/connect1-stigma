@@ -592,3 +592,138 @@ fancyRpartPlot(mcomp.d4,
 
 #####
 
+
+### Random forest
+#####
+
+### Load libraries for this analysis ###
+
+library(caret)
+library(ranger)
+
+### Set up folds of data for cross-validation ###
+
+# Divide the data into 7 partitions, with rate of purchase kept constant across partitions
+# Setting a seed keeps the "randomization" reproducible
+set.seed(550)
+holdout <- createFolds(y = pta$HA.Purchase, k = 7, list=FALSE)
+fold1 <- pta[holdout != 1, ] #dropped 108 cases
+fold2 <- pta[holdout != 2, ] #dropped 108 cases
+fold3 <- pta[holdout != 3, ] #dropped 108 cases
+fold4 <- pta[holdout != 4, ] #dropped 108 cases
+fold5 <- pta[holdout != 5, ] #dropped 107 cases
+fold6 <- pta[holdout != 6, ] #dropped 107 cases
+fold7 <- pta[holdout != 7, ] #dropped 107 cases
+
+# Standard formula
+formula.28x <- formula(HA.Purchase ~ 
+  Age +  
+  PTA4_better_ear +
+  HHIE_total +
+  Ability +
+  Sex +
+  Edu +
+  Married +
+  Health +
+  QoL +
+  Help_neighbours +
+  Help_problems +
+  Concern +
+  Lonely +
+  Sub_Age_avg +
+  Age_stigma_avg +
+  HA_stigma_avg +
+  Accomp +
+  Soc_Suspect_HL +
+  Soc_Know_HL +
+  Soc_Discuss_HL +
+  Soc_Hearing_test +
+  Soc_Obtain_HA +
+  Soc_Sometimes_use +
+  Soc_Regular_use +
+  Soc_Very_positive +
+  Soc_Somewhat_positive +
+  Soc_Somewhat_negative +
+  Soc_Very_negative)
+
+# Create empty data frame to hold model accuracy info using different parameters
+dataRF <- data.frame(dataset = character(), ntrees = numeric(), 
+                     npred = numeric(), depth = numeric(), 
+                     accuracy=numeric(), 
+                     trueneg=numeric(), miss=numeric(), falsepos=numeric(), hit=numeric(),
+                     stringsAsFactors = FALSE)
+
+# Vary tree number of splits from 1 through 8
+# Within that, also vary number of predictors from 2 through 28
+for (depth in 1:8) {
+  for (npred in 2:28) {
+    mrf <- ranger(formula.28x, data = fold7, num.trees = 2000, 
+                max.depth = depth, mtry = npred, 
+                importance="impurity", splitrule="gini", class.weights=c(0.2466887, 1), seed=409)
+    dataRF[(27*(depth-1) + (npred-1)), 1] <- "fold7"
+    dataRF[(27*(depth-1) + (npred-1)), 2] <- 2000
+    dataRF[(27*(depth-1) + (npred-1)), 3] <- npred
+    dataRF[(27*(depth-1) + (npred-1)), 4] <- depth
+    dataRF[(27*(depth-1) + (npred-1)), 5] <- 1 - mrf$prediction.error
+    dataRF[(27*(depth-1) + (npred-1)), 6] <- mrf$confusion.matrix[1]
+    dataRF[(27*(depth-1) + (npred-1)), 7] <- mrf$confusion.matrix[2]
+    dataRF[(27*(depth-1) + (npred-1)), 8] <- mrf$confusion.matrix[3]
+    dataRF[(27*(depth-1) + (npred-1)), 9] <- mrf$confusion.matrix[4]
+  }
+}
+dataRF$sensitivity <- dataRF$hit / (dataRF$hit + dataRF$miss)
+dataRF$specificity <- dataRF$trueneg / (dataRF$trueneg + dataRF$falsepos)
+write.csv(dataRF, '~/Desktop/dataRF_fold7_trees2000.csv')
+
+# Combine data from 7 folds
+f7 <- read.csv('dataRF_fold7_trees2000.csv', header=TRUE)
+f6 <- read.csv('dataRF_fold6_trees2000.csv', header=TRUE)
+f5 <- read.csv('dataRF_fold5_trees2000.csv', header=TRUE)
+f4 <- read.csv('dataRF_fold4_trees2000.csv', header=TRUE)
+f3 <- read.csv('dataRF_fold3_trees2000.csv', header=TRUE)
+f2 <- read.csv('dataRF_fold2_trees2000.csv', header=TRUE)
+f1 <- read.csv('dataRF_fold1_trees2000.csv', header=TRUE)
+allf <- rbind(f1, f2, f3, f4, f5, f6, f7)
+write.csv(allf[, -1], 'dataRF_foldsAll_trees2000.csv.csv')
+rm(list=c('f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7'))
+
+
+# Plot effect of changing number of tree splits and number of predictors per tree
+library(ggplot2)
+
+dataRF <- read.csv('dataRF_foldsAll_trees2000.csv', header=TRUE)
+dataRF$nsplits <- factor(dataRF$depth)
+
+ggplot(data = dataRF, aes(x = npred, y = accuracy, colour = nsplits)) + 
+  stat_summary(fun = mean, geom = "line", size = 1) + 
+  scale_x_continuous(name = "Number of predictors per tree", 
+                     limits = c(1, 29), breaks = seq(2, 28, 2)) + 
+  scale_y_continuous(name = "Model accuracy", 
+                     limits = c(0.55, 0.85), breaks = seq(0.55, 0.85, 0.05)) + 
+  theme_bw() +   
+  theme(axis.title = element_text(size = 20), 
+    axis.text = element_text(colour = "black", size = 16))
+
+# all data; 3 predictors per tree and a maximum tree depth of 8 splits
+mrf <- ranger(formula.28x, data = pta, num.trees = 2000, 
+                max.depth = 8, mtry = 3, 
+                importance="impurity", splitrule="gini", class.weights=c(0.2466887, 1), seed=409)
+confusionMatrix(data = mrf$predictions, 
+                reference = pta$HA.Purchase, 
+                positive = c("Yes"))
+
+
+# Plot sensitivity vs false alarms
+ggplot(data = dataRF, aes(x = 1 - specificity, y = sensitivity, colour = nsplits)) + 
+  geom_point() + 
+  scale_x_continuous(name = "1 - Specificity", 
+                     limits = c(0, 0.6), breaks = seq(0, 0.6, 0.1)) + 
+  scale_y_continuous(name = "Sensitivity", 
+                     limits = c(0, 0.6), breaks = seq(0, 0.6, 0.1)) + 
+  theme_bw() +   
+  theme(axis.title = element_text(size = 20), 
+    axis.text = element_text(colour = "black", size = 16))
+
+
+
+#####
