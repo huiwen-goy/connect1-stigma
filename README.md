@@ -19,10 +19,10 @@ g) analyses listed below
  
 #### Reports: Methods, results, and conclusions
 
-1. [Logistic regression with backwards elimination](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_LR.html)
+1. Net Reclassification Index
 
-2. [Net Reclassification Index](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_NRI.html)
+2. Logistic regression with backwards elimination
 
-3. [Classification tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_Tree.html)
+3. Classification tree
 
-4. [Random forest](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_rf-2021-02-11.html)
+4. Random forest
