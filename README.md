@@ -23,4 +23,4 @@ g) analyses listed below
 
 [Classification tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_Tree_2022.html)  
   
-Logistic regression with backwards elimination 
+[Logistic regression](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_LR_2022.html)
