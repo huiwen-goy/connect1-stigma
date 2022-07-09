@@ -703,18 +703,19 @@ variables:</p>
 <h1>Takeaways</h1>
 <ol style="list-style-type: decimal">
 <li><p>Checking that variables aren’t too highly correlated and that
-there are no high-influence datapoints helps to confirm that
-coefficients (and therefore odds ratios), are correct.</p></li>
+there are no high-influence datapoints helps increase confidence in
+these coefficients (and therefore odds ratios).</p></li>
 <li><p>Dropping most of the 28 predictors doesn’t lead to a worse model;
 only 4’ish variables from the list are needed to explain the outcome.
-(But it’s not a very good model, which means there’s a lot more playing
-into the purchase decision that the study hasn’t captured.)</p></li>
-<li><p>Stepwise variable selection can lead to questionable results.
-Moving to a less controversial method of lasso regression for variable
-selection: Age, HHIE, and “know at least 1 person with suspected HL”
-affect the decision to purchase hearing aids. HA Stigma survived the
-variable selection procedure as well, but confidence intervals show that
-it has an uncertain effect.</p></li>
+(But it’s not a very good model because it only explains &lt;4% of the
+variance.)</p></li>
+<li><p>Stepwise variable selection can lead to questionable
+coefficients, confidence intervals and p-values. Moving to a less
+controversial method of lasso regression for variable selection: Age,
+HHIE, and “know at least 1 person with suspected HL” affect the decision
+to purchase hearing aids. HA Stigma survived the variable selection
+procedure as well, but confidence intervals show that it has an
+uncertain effect.</p></li>
 </ol>
 </div>
 
