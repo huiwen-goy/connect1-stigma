@@ -22,4 +22,4 @@ These are not for the paper; I just wanted to play with other tree techniques, b
   
 [Random forest](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_RF_2022.html)  
 
-[Slides: Introduction to tree techniques](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.html)  
+[Slides: Introduction to tree techniques](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.pdf)  
