@@ -6,7 +6,9 @@ The original dataset contained 4300+ survey responses. After cleaning the data a
 
 [Exploratory plots](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_descriptives1_2023.html)
 
-[**Updated analyses for revision 1**](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_descriptives2_2023.html)  
+**Updated analyses for revision 1**  
+
+[Participant comparison, scale reliability, study duration](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_descriptives2_2023.html)  
 * a comparison of included and excluded participants  
 * internal reliability analyses for stigma scales  
 * an analysis of study duration effects  
