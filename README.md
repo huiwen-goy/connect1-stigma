@@ -6,7 +6,7 @@ The goal of this project was to determine how well hearing, health and social fa
 2. Pure-tone average of 25 dB HL or greater in the better ear  
 3. Complete data across 28 predictors of interest and the outcome  
 
-[**Exploratory plots**](https://huiwen-goy.github.io/connect1-stigma/01_explore.html)
+[**Exploratory plots**](https://huiwen-goy.github.io/connect1-stigma/01_explore.html)  
 Demographic, hearing, stigma, social support, and social network measures.  
 Note that percentage breakdowns for categories are labelled with counts, to highlight that few people tended to choose the most negative options.  
 
@@ -15,17 +15,17 @@ Note that percentage breakdowns for categories are labelled with counts, to high
 * Internal reliability analyses for stigma scales, justifying dropping one Age Stigma item.   
 * Analysis of study duration effects, showing that 80+% purchase HAs in the first three months.  
 
-[**Multicollinearity and high-influence datapoints**](https://huiwen-goy.github.io/connect1-stigma/03_collinear.html) 
+[**Multicollinearity and high-influence datapoints**](https://huiwen-goy.github.io/connect1-stigma/03_collinear.html)  
 None of the 28 predictors were multicollinear, and there were no observations with a large influence.  
 
-[Logistic regression](https://huiwen-goy.github.io/connect1-stigma/04_log.html)  
+[**Logistic regression**](https://huiwen-goy.github.io/connect1-stigma/04_log.html)  
 * Thresholds  
 * Previous analysis: Backwards elimination procedure using AIC  
 * New analysis: Penalized regression  
 * Power analysis (response to comments)  
 * Takeaways
 
-[Classification tree](https://huiwen-goy.github.io/connect1-stigma/05_ctree.html) 
+[**Classification tree**](https://huiwen-goy.github.io/connect1-stigma/05_ctree.html) 
 * About classification trees  
 * Using case weights  
 * Pruning procedure  
@@ -35,11 +35,12 @@ None of the 28 predictors were multicollinear, and there were no observations wi
 * Takeaways  
 
 **Extras**  
-Not for the paper; I just wanted to try other tree techniques. 
-[Introduction to tree techniques](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.pdf)  
-  
-[Bagged tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_bagging_2022.html)  
-  
-[Random forest](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_RF_2022.html)  
+Not for the paper; I just wanted to try other tree techniques.  
 
-[Boosted tree](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_RF_2022.html)
+[**Introduction to tree techniques**](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.pdf)  
+  
+[**Bagged tree**](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_bagging_2022.html)  
+  
+[**Random forest**](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_RF_2022.html)  
+
+[**Boosted tree**](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_RF_2022.html)  
