@@ -4,7 +4,7 @@ The goal of this project was to determine how well hearing, health and social fa
 **Data inclusion criteria**  
 1. Participants with known age and sex, who were 50+ years old, and had never used a hearing aid  
 2. Pure-tone average of 25 dB HL or greater in the better ear  
-3. Complete data across 28 predictors of interest and the outcome  
+3. Complete data across 28 predictors of interest, including all original items on the Age Stigma scale  
 
 [**Exploratory plots**](https://huiwen-goy.github.io/connect1-stigma/01_explore.html)  
 Demographic, hearing, stigma, social support, and social network measures.  
