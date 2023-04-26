@@ -18,7 +18,7 @@ Note that percentage breakdowns for categories are labelled with counts, to high
 [**Multicollinearity and high-influence datapoints**](https://huiwen-goy.github.io/connect1-stigma/03_collinear.html)  
 None of the 28 predictors were multicollinear, and there were no observations with a large influence on a regression model.  
 
-[**Logistic regression**](https://huiwen-goy.github.io/connect1-stigma/04_log.html)  
+[**Logistic regression**](https://huiwen-goy.github.io/connect1-stigma/04_lr.html)  
 * Choosing a threshold  
 * Previous analysis: Backwards elimination procedure using AIC  
 * New analysis: Penalized regression  
