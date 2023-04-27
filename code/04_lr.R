@@ -6,6 +6,7 @@ library(caret)
 library(glmnet)
 library(car)
 library(knitr)
+library(pROC)
 
 # Standard formula, with 1 & 0 instead of factors
 formula28 <- formula(Purchased_HA ~ 
@@ -254,13 +255,30 @@ legend(0.56, 0.45,
        lty = c("solid", "solid", "solid"), col = c("black", "red", "blue"), 
        bty="n")
 
-# Draw table comparing three types of models
+
+# accuracy, sensitivity, specificity values fetched from threshold tables
+# add AUC; note must recalculate "_bi" to get away from previous loops using different thresholds
+
+mfull_pred_bi <- ifelse(mfull_pred >=0.1978752, 1, 0)
+table(mfull_pred_bi, pta$Purchased_HA, dnn = c("predicted", "actual") )
+roc(response = pta$Purchased_HA, predictor = mfull_pred_bi) #0.6533
+
+mstep_pred_bi <- ifelse(mstep_pred >=0.1978752, 1, 0)
+table(mstep_pred_bi, pta$Purchased_HA, dnn = c("predicted", "actual") )
+roc(response = pta$Purchased_HA, predictor = mstep_pred_bi) #0.6406
+
+mlasso2_pred_bi <- ifelse(mlasso2_pred >=0.1978752, 1, 0)
+table(mlasso2_pred_bi, pta$Purchased_HA, dnn = c("predicted", "actual") )
+roc(response = pta$Purchased_HA, predictor = mlasso2_pred_bi) #0.6207
+
+# summary table with model metrics
 obj <- data.frame(preds = c(28, 6, 4), 
                   acc = c(65.47, 65.86, 63.47), 
                   sens = c(65.10, 61.07, 59.73), 
-                  spec = c(65.56, 67.05, 64.40) )
+                  spec = c(65.56, 67.05, 64.40),
+                  auc = c(65.33, 64.06, 62.07))
 rownames(obj) <- c("Full model", "Backwards step", "Lasso regression")
-colnames(obj) <- c("Predictors", "Accuracy %", "Sensitivity %", "Specificity %")
+colnames(obj) <- c("Predictors", "Accuracy %", "Sensitivity %", "Specificity %", "AUC")
 
 kable(obj, format="pipe", row.names = TRUE)
 
