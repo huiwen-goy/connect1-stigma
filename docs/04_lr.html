@@ -423,7 +423,7 @@ all 28 predictors.</p>
 <p>Summary of full model with 28 predictors:</p>
 <pre><code>## 
 ## Call:
-## glm(formula = formula28, family = binomial(&quot;logit&quot;), data = pta)
+## glm(formula = formula28, family = &quot;binomial&quot;, data = pta)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
@@ -496,8 +496,7 @@ it has a better AIC of 713.84 (below output).</p>
 <pre><code>## 
 ## Call:
 ## glm(formula = Purchased_HA ~ Age + HHIE_total + Health + HA_stigma_avg + 
-##     Soc_Suspect_HL + Soc_Discuss_HL, family = binomial(&quot;logit&quot;), 
-##     data = pta)
+##     Soc_Suspect_HL + Soc_Discuss_HL, family = &quot;binomial&quot;, data = pta)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
@@ -617,13 +616,14 @@ of the variance.</p>
 <p>Comparing models with 28, 6, and 4 predictors, overall accuracy is
 similar, with sensitivity changing the most as fewer predictors are
 used:</p>
-<table>
+<table style="width:100%;">
 <colgroup>
-<col width="25%" />
-<col width="16%" />
-<col width="16%" />
-<col width="20%" />
-<col width="20%" />
+<col width="23%" />
+<col width="15%" />
+<col width="15%" />
+<col width="19%" />
+<col width="19%" />
+<col width="8%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -632,6 +632,7 @@ used:</p>
 <th align="right">Accuracy %</th>
 <th align="right">Sensitivity %</th>
 <th align="right">Specificity %</th>
+<th align="right">AUC</th>
 </tr>
 </thead>
 <tbody>
@@ -641,6 +642,7 @@ used:</p>
 <td align="right">65.47</td>
 <td align="right">65.10</td>
 <td align="right">65.56</td>
+<td align="right">65.33</td>
 </tr>
 <tr class="even">
 <td align="left">Backwards step</td>
@@ -648,6 +650,7 @@ used:</p>
 <td align="right">65.86</td>
 <td align="right">61.07</td>
 <td align="right">67.05</td>
+<td align="right">64.06</td>
 </tr>
 <tr class="odd">
 <td align="left">Lasso regression</td>
@@ -655,6 +658,7 @@ used:</p>
 <td align="right">63.47</td>
 <td align="right">59.73</td>
 <td align="right">64.40</td>
+<td align="right">62.07</td>
 </tr>
 </tbody>
 </table>
