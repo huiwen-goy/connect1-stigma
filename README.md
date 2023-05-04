@@ -30,8 +30,7 @@ None of the 28 predictors were multicollinear, and there were no observations wi
 * Using case weights  
 * Pruning procedure  
 * Previous analysis: max depth  
-* New analysis:   
-* Results  
+* New analysis: pruning  
 * Takeaways  
 
 [**Introduction to tree techniques**](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.pdf)  
