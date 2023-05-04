@@ -118,7 +118,7 @@ cpdf$AUC[i] <- as.numeric(roctemp$auc)
 
 }
 
-cpdf$Accuracy <- (cpdf$PredNo_RealNo + cpdf$PredYes_RealYes) / 756
+cpdf$Accuracy <- (cpdf$PredNo_RealNo + cpdf$PredYes_RealYes) / 753
 cpdf$Sensitivity <- cpdf$PredYes_RealYes / (cpdf$PredNo_RealYes + cpdf$PredYes_RealYes)
 cpdf$Specificity <- cpdf$PredNo_RealNo / (cpdf$PredYes_RealNo + cpdf$PredNo_RealNo)
 
@@ -346,6 +346,9 @@ holdout <- createFolds(y = pta$HA.Purchase, k = 5, list = FALSE)
 
 var_list <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability", "Sex.f", "Edu", "Married.f", "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely", "Sub_Age_avg", "Age_stigma_avg", "HA_stigma_avg", "Accomp.f", "Soc_Suspect_HL.f", "Soc_Know_HL.f", "Soc_Discuss_HL.f", "Soc_Hearing_test.f", "Soc_Obtain_HA.f", "Soc_Sometimes_use.f", "Soc_Regular_use.f", "Soc_Very_positive.f", "Soc_Somewhat_positive.f", "Soc_Somewhat_negative.f", "Soc_Very_negative.f")
 
+# create df for metrics
+dfmet_cp02 <- data.frame(metric = c("Accuracy", "Sensitivity", "Specificity", "AUC"))
+# create df for var imp
 dfvi_cp02 <- data.frame(variable = var_list, temp = c(0) )
 
 # drop out each fold, and get tree and variable importance for remaining data
@@ -357,6 +360,21 @@ for (i in 1:5) {
                  method = "class", parms = list(split = "gini"), 
                  control = rpart.control(cp = 0.02, maxcompete = FALSE, maxsurrogate=0))
 
+  # get metrics
+  mtree_pred <- predict(mtree, newdata = tempdata, type='class')
+  mtree_pred_bi <- ifelse(mtree_pred == "No", 0, 1)
+  
+  cm <- confusionMatrix(data = as.factor(mtree_pred_bi), 
+                        reference = as.factor(tempdata$Purchased_HA), 
+                        positive = c("1"))
+  roc_out <- roc(response = tempdata$Purchased_HA, predictor = mtree_pred_bi)
+  
+  metrics_temp <- data.frame(newcol = as.numeric( c(cm$overall[1], cm$byClass[1], cm$byClass[2], roc_out$auc) ))
+  colnames(metrics_temp)[1] <- paste0("subset_", i)
+    
+  # column bind onto df for metrics
+  dfmet_cp02 <- cbind(dfmet_cp02, metrics_temp)
+  
   # get variable importance as dataframe
   varimp_temp <- data.frame(mtree$variable.importance)
   varimp_temp$variable <- rownames(varimp_temp) 
@@ -375,10 +393,22 @@ dfvi_cp02 <- dfvi_cp02[, -2]
 # divide each column by sum of column's importances and convert to %
 percentages_cp02 <- mapply('/', dfvi_cp02[, 2:6], colSums(dfvi_cp02[, 2:6], na.rm=TRUE)) * 100
 
-# Changes in variable importance (%) across data subsets, CP = 0.02
-obj <- data.frame(cbind(dfvi_cp02$variable, round(percentages_cp02, 4))) 
-kable(obj, format="pipe", row.names = FALSE)
+# Changes in model metrics (%) across data subsets
+met_cp02 <- data.frame(cbind(dfmet_cp02[,1], round(dfmet_cp02[,2:6]*100, 2)))
+colnames(met_cp02)[1] <- "metric"
+kable(met_cp02, format="pipe", row.names = FALSE)
 
+# Changes in variable importance (%) across data subsets, CP = 0.02
+varimp_cp02 <- data.frame(cbind(dfvi_cp02$variable, round(percentages_cp02, 2))) 
+varimp_cp02 <- replace(varimp_cp02, is.na(varimp_cp02), "*")
+colnames(varimp_cp02)[1] <- "variable"
+kable(varimp_cp02, format="pipe", row.names = FALSE)
+
+
+# create df for metrics
+dfmet_cp013 <- data.frame(metric = c("Accuracy", "Sensitivity", "Specificity", "AUC"))
+
+# create df for var imp
 dfvi_cp013 <- data.frame(variable = var_list, temp = c(0) )
 
 # drop out each fold, and get tree and variable importance for remaining data
@@ -390,6 +420,21 @@ for (i in 1:5) {
                  method = "class", parms = list(split = "gini"), 
                  control = rpart.control(cp = 0.013, maxcompete = FALSE, maxsurrogate=0))
 
+  # get metrics
+  mtree_pred <- predict(mtree, newdata = tempdata, type='class')
+  mtree_pred_bi <- ifelse(mtree_pred == "No", 0, 1)
+  
+  cm <- confusionMatrix(data = as.factor(mtree_pred_bi), 
+                        reference = as.factor(tempdata$Purchased_HA), 
+                        positive = c("1"))
+  roc_out <- roc(response = tempdata$Purchased_HA, predictor = mtree_pred_bi)
+  
+  metrics_temp <- data.frame(newcol = as.numeric( c(cm$overall[1], cm$byClass[1], cm$byClass[2], roc_out$auc) ))
+  colnames(metrics_temp)[1] <- paste0("subset_", i)
+    
+  # column bind onto df for metrics
+  dfmet_cp013 <- cbind(dfmet_cp013, metrics_temp)
+  
   # get variable importance as dataframe
   varimp_temp <- data.frame(mtree$variable.importance)
   varimp_temp$variable <- rownames(varimp_temp) 
@@ -403,16 +448,21 @@ for (i in 1:5) {
 }
 
 # drop temp column of zero's
-dfvi_cp013 <- dfvi_cp013[, -2]
+dfvi_cp013 <- dfvi_cp013[ ,-2]
 
 # divide each column by sum of column's importances and convert to %
-percentages_cp013 <- mapply('/', dfvi_cp013[, 2:6], colSums(dfvi_cp013[, 2:6], na.rm=TRUE)) * 100
+percentages_cp013 <- mapply('/', dfvi_cp013[, 2:6], colSums(dfvi_cp013[, 2:6], na.rm=TRUE) ) * 100
+
+# Changes in model metrics (%) across data subsets, CP = 0.013
+met_cp013 <- data.frame(cbind(dfmet_cp013[,1], round(dfmet_cp013[,2:6]*100, 2)))
+colnames(met_cp013)[1] <- "metric"
+kable(met_cp013, format="pipe", row.names = FALSE)
 
 # Changes in variable importance (%) across data subsets, CP = 0.013
-obj <- data.frame(cbind(dfvi_cp013$variable, round(percentages_cp013, 4))) 
-kable(obj, format="pipe", row.names = FALSE)
-
-
+varimp_cp013 <- data.frame(cbind(dfvi_cp013$variable, round(percentages_cp013, 2))) 
+varimp_cp013 <- replace(varimp_cp013, is.na(varimp_cp013), "*")
+colnames(varimp_cp013)[1] <- "variable"
+kable(varimp_cp013, format="pipe", row.names = FALSE)
 
 
 
