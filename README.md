@@ -34,9 +34,6 @@ None of the 28 predictors were multicollinear, and there were no observations wi
 * Results  
 * Takeaways  
 
-**Extras**  
-Not for the paper; I just wanted to try other tree techniques.  
-
 [**Introduction to tree techniques**](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques_Jan2023.01.18.2021.pdf)  
   
 [**Bagged tree**](https://huiwen-goy.github.io/connect1-stigma/Connect1_Stigma_bagging_2022.html)  
