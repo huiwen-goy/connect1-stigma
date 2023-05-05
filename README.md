@@ -32,11 +32,11 @@ None of the 28 predictors were multicollinear, and there were no observations wi
 * Previous analysis: max depth  
 * New analysis: pruning  
 * Takeaways  
-
-[**Introduction to tree techniques**](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques.pdf)  
   
 [**Bagged tree**](https://huiwen-goy.github.io/connect1-stigma/06_bag.html)  
   
 [**Random forest**](https://huiwen-goy.github.io/connect1-stigma/07_rf.html)  
 
 [**Boosted tree**](https://huiwen-goy.github.io/connect1-stigma/08_boost.html)  
+
+[**Introduction to tree techniques**](https://huiwen-goy.github.io/connect1-stigma/intro_tree_techniques.pdf)  
