@@ -464,7 +464,19 @@ varimp_cp013 <- replace(varimp_cp013, is.na(varimp_cp013), "*")
 colnames(varimp_cp013)[1] <- "variable"
 kable(varimp_cp013, format="pipe", row.names = FALSE)
 
-
+# Table of metrics, comparing lasso logistic regression & cp=0.013 tree 
+model_comp <- data.frame(acc = c(63.47, 67.46, NA, NA, NA),
+                         sens = c(59.73, 78.52, NA, NA, NA), 
+                         spec = c(64.40, 64.74, NA, NA, NA),
+                         auc = c(62.07, 71.63, NA, NA, NA) )
+rownames(model_comp) <- c("Logistic x=4", 
+                          "Class tree cp=0.013", 
+                          "Bagging", 
+                          "Random forest", 
+                          "Boosting")
+colnames(model_comp) <- c("Accuracy %", "Sensitivity %", "Specificity %", "Area Under Curve")
+model_comp <- replace(model_comp, is.na(model_comp), "*")
+kable(model_comp, format="pipe", row.names = TRUE)
 
 
 
