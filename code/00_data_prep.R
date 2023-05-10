@@ -15,8 +15,8 @@ data$Sex[data$Q43 == "Male"] <- 1
 data$Sex[data$Q43 == "Female"] <- 0
 
 data$Edu <- data$Q46_Corrected
-data$Health <- data$Q53
-data$QoL <- data$Q54
+data$Health <- data$Q53_Corrected
+data$QoL <- data$Q54_Corrected
 
 data$Married <- c(NA) 
 data$Married[data$marital_recoded == "Married"] <- 1
@@ -35,13 +35,13 @@ data$Accomp[data$Q45 == "No"] <- 0
 data$Help_neighbours <- data$Q50_Corrected
 
 data$Help_problems <- c(NA)
-data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "0"] <- 0
-data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "1_2"] <- 1
-data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "3_5"] <- 2
-data$Help_problems[is.na(data$Q51)==FALSE & data$Q51 == "5+"] <- 3
+data$Help_problems[is.na(data$Q51_Corrected)==FALSE & data$Q51_Corrected == "0"] <- 0
+data$Help_problems[is.na(data$Q51_Corrected)==FALSE & data$Q51_Corrected == "1_2"] <- 1
+data$Help_problems[is.na(data$Q51_Corrected)==FALSE & data$Q51_Corrected == "3_5"] <- 2
+data$Help_problems[is.na(data$Q51_Corrected)==FALSE & data$Q51_Corrected == "5+"] <- 3
 
-data$Concern <- data$Q52
-data$Lonely <- data$Q55
+data$Concern <- data$Q52_Corrected
+data$Lonely <- data$Q55_Corrected
 
 # Q21
 data$Soc_Suspect_HL <- c(NA)
