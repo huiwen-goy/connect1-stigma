@@ -135,7 +135,7 @@ legend(0.6, 0.4, legend = c("Full model: 28 pred", "Back step: 6 pred"),
 # Lasso
 #####
 
-# just the predictors
+# list of 28 predictors of interest
 var_28 <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability", 
              "Sex", "Edu", "Married", "Health", "QoL", "Help_neighbours", "Help_problems",
              "Concern", "Lonely", "Sub_Age_avg", "Age_stigma_avg", "HA_stigma_avg",
@@ -143,6 +143,7 @@ var_28 <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability",
              "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use", "Soc_Very_positive",
              "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative")
 
+# Run a full lasso regression model
 set.seed(1331)
 mcv_unweighted <- cv.glmnet(x = as.matrix(pta[,var_28]), 
                             y = pta[,"Purchased_HA"], 
@@ -186,8 +187,9 @@ plot(x = mcv_unweighted$lambda, y = mcv_unweighted$nzero,
      pch=1, col = 'black', xlab="Lambda", ylab="Number of non-zero coefficients")
 abline(v = 0.0274954, col='red', lty='dotted')
 
-# non-CV doesn't have measure options, but exactly the same results otherwise
-# 𝛼=1 is lasso regression (default) and 𝛼=0 is ridge regression
+# Run a full lasso regression model
+# Note: non-CV glmnet model doesn't have different measurement options (eg. AUC), but exactly the same results
+# Reminder: 𝛼=1 is lasso regression (default) and 𝛼=0 is ridge regression
 set.seed(1331)
 mlasso <- glmnet(x = pta[,var_28], 
                  y = pta[, "Purchased_HA"],
@@ -197,15 +199,22 @@ mlasso <- glmnet(x = pta[,var_28],
                  nlambda = 100,
                  standardize = TRUE)
 
-# summary of model with just 4 predictors
+# See the non-zero coefficients at the lambda value that gives the best performance (AUC) 
+# Age, HHIE_total, HA_stigma_avg, Soc_Suspect_HL
+coef(mlasso, s = 0.0274954)
+
+# Make a regression model with just those 4 non-zero coefficients (predictors left after "variable selection")
 mlasso2 <- glm(Purchased_HA ~ Age + HHIE_total + HA_stigma_avg + Soc_Suspect_HL, 
                family = "binomial", data = pta)
+# See regression model results
 summary(mlasso2)
+# Transform model coefficients into odds ratios
 exp(cbind(OR = coef(mlasso2), confint(mlasso2)))
 
+# Calculate model predicted Y values based on X predictors
 mlasso2_pred <- predict(mlasso2, newdata = pta[var_28], type = "response")
 
-# calculate results for different thresholds; min = 0.03594, max = 0.66708
+# calculate results for different thresholds from 0.03594 to 0.66708
 dec_thresholds_lasso <- c(seq(0.04, 0.19, by=0.01), 0.1978752, seq(0.21, 0.6, by=0.01))
 
 mlasso2_roc_df <- data.frame(threshold = rep(NA, length(dec_thresholds_lasso)), 
@@ -224,7 +233,7 @@ mlasso2_roc_df$sensitivity[i] <- confusion_output$byClass[1]
 mlasso2_roc_df$specificity[i] <- confusion_output$byClass[2]
 }
 
-# plot ROC for Full, Step, Lasso-based
+# plot ROC for Full, Step, Lasso-based models
 
 plot(1-mlasso2_roc_df$specificity, mlasso2_roc_df$sensitivity, type='l', 
      xaxt='n', xaxt='n', ann=FALSE, ylim=c(0,1), xlim=c(0,1), 

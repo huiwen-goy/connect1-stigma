@@ -1,4 +1,6 @@
 
+# Prep
+#####
 # Libraries
 library(caret) #for confusionMatrix
 library(pROC) #AUC
@@ -41,10 +43,12 @@ formula28x <- formula(HA.Purchase ~
   Soc_Somewhat_positive.f +
   Soc_Somewhat_negative.f +
   Soc_Very_negative.f)
+#####
 
-# Plot graph showing CP values & accuracy with cross-validation
-
-# note metric=ROC needs class probabilities
+# Find model performance at different CP values
+#####
+# Create different tree models using different CP values
+# note: metric=ROC needs class probabilities
 set.seed(1331)
 mc <- train(formula28x, data = pta, 
             weights = pta$caseweights,
@@ -53,7 +57,7 @@ mc <- train(formula28x, data = pta,
             metric = "Accuracy", 
             control = rpart.control(split="gini", minsplit = 20),
             trControl = trainControl(method="repeatedcv", number = 5, repeats = 10))
-# mc$finalModel = A fit object using the best parameters
+# mc$finalModel: A fit object using the best parameters
 # mc$bestTune: cp = 0.02
 
 # Plot model accuracy vs CP values
@@ -125,9 +129,7 @@ cpdf$Specificity <- cpdf$PredNo_RealNo / (cpdf$PredYes_RealNo + cpdf$PredNo_Real
 temptab <- data.frame(cbind(cpdf[, c("cpvalue", "nsplits")],
                             round(cpdf[, c("Accuracy", "Sensitivity", "Specificity", "AUC")], 4) ) )
 
-
 # Table in graph form
-
 p1 <- ggplot(data = temptab) + 
   geom_line(aes(x = cpvalue, y = nsplits), colour='black') + 
   geom_point(aes(x = cpvalue, y = nsplits), colour='black') + 
@@ -165,9 +167,10 @@ p1 / p2
 
 # Print accompanying table from above
 print(temptab[order(temptab$cpvalue, decreasing = TRUE), ] )
+#####
 
-### Previous analysis using maxdepth = 4
-
+# Previous analysis using maxdepth = 4
+#####
 # Dataset from Dec2019; note Age_Stigma_avg still included Q4
 
 # need 0/1 variable for ROC!
@@ -234,10 +237,11 @@ roc(response = pta$Purchased_HA, predictor = m_dep4_rev_pred_num) #0.6739
 rpart.plot(m_dep4_orig, box.palette=0, type = 4, extra = 101, under=TRUE, fallen.leaves=TRUE, varlen=0, faclen=0)
 #Q4exc.jpeg
 rpart.plot(m_dep4_rev, box.palette=0, type = 4, extra = 101, under=TRUE, fallen.leaves=TRUE, varlen=0, faclen=0)
+#####
 
-### New analysis: Pruning 
-
-# The two trees
+# New approach to building tree model: Pruning 
+#####
+# The two trees; based on overall accuracy vs taking sensitivity into account
 m_cp02 <- rpart(formula28x, data = pta, 
                  weights = pta$caseweights, 
                  method = "class", 
@@ -334,8 +338,11 @@ g2 <- ggplot(data = vi_cp013, aes(y = Variable_importance/33.57578*100, x = numb
 
 library(patchwork)
 g1 / g2 
+#####
 
-# create 5 folds, stratified by outcome
+# Check how tree model changes with different subsets of the data
+#####
+# create 5 folds of data, stratified by outcome (same proportions of Y and N)
 set.seed(800)
 holdout <- createFolds(y = pta$HA.Purchase, k = 5, list = FALSE)
 
@@ -404,7 +411,6 @@ varimp_cp02 <- replace(varimp_cp02, is.na(varimp_cp02), "*")
 colnames(varimp_cp02)[1] <- "variable"
 kable(varimp_cp02, format="pipe", row.names = FALSE)
 
-
 # create df for metrics
 dfmet_cp013 <- data.frame(metric = c("Accuracy", "Sensitivity", "Specificity", "AUC"))
 
@@ -463,7 +469,10 @@ varimp_cp013 <- data.frame(cbind(dfvi_cp013$variable, round(percentages_cp013, 2
 varimp_cp013 <- replace(varimp_cp013, is.na(varimp_cp013), "*")
 colnames(varimp_cp013)[1] <- "variable"
 kable(varimp_cp013, format="pipe", row.names = FALSE)
+#####
 
+# Extending analyses to other tree techniques (start comparison table)
+#####
 # Table of metrics, comparing lasso logistic regression & cp=0.013 tree 
 model_comp <- data.frame(acc = c(63.47, 67.46, NA, NA, NA),
                          sens = c(59.73, 78.52, NA, NA, NA), 
@@ -477,7 +486,4 @@ rownames(model_comp) <- c("Logistic x=4",
 colnames(model_comp) <- c("Accuracy %", "Sensitivity %", "Specificity %", "Area Under Curve")
 model_comp <- replace(model_comp, is.na(model_comp), "*")
 kable(model_comp, format="pipe", row.names = TRUE)
-
-
-
-
+#####
