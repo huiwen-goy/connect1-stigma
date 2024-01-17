@@ -31,7 +31,7 @@ all_pta %>%
 #####
 
 
-# Continuous variables
+# Included vs Excluded; Continuous variables
 #####
 # compare complete and missing subsamples
 pta_miss <- subset(all_pta,  group=="Excluded")
@@ -74,7 +74,7 @@ print(data.frame(output_cont))
 #####
 
 
-# Binary variables 
+# Included vs Excluded; Binary variables 
 #####
 cat_list <- c("Sex", "Married", "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", 
               "Soc_Hearing_test", "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use",
@@ -101,6 +101,76 @@ for (i in 1:14) {
     output_cat[i,4] <- round( ptest.data$statistic, 3)
     output_cat[i,5] <- round( ptest.data$p.value, 4)
     output_cat[i,6] <- round( 2*asin((ptest.data$estimate[1])^0.5) - 2*asin((ptest.data$estimate[2])^0.5), 3)
+}
+
+print(data.frame(output_cat))
+#####
+
+
+# Yes vs No in Included; Continuous variables
+#####
+# compare yes and no groups within complete data
+pta_yes <- subset(pta,  HA.Purchase=="Yes")
+pta_no <- subset(pta,  HA.Purchase=="No")
+
+cont_list <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability",
+               "Edu", "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely", 
+               "SubAge_1", "SubAge_2", "SubAge_3", "Sub_Age_avg",
+               "AgeStigma_1", "AgeStigma_2", "AgeStigma_3", "AgeStigma_4", "AgeStigma_5", "Age_stigma_avg",
+               "HaStigma_1", "HaStigma_2", "HaStigma_3", "HaStigma_4", "HA_stigma_avg")  
+
+output_cont <- data.frame(Variable=as.character(), 
+                     Mean_No=as.numeric(),
+                     SD_No=as.numeric(),
+                     Mean_Yes=as.numeric(), 
+                     SD_Yes=as.numeric(), 
+                     t=as.numeric(), 
+                     p=as.numeric(), stringsAsFactors=FALSE)
+for (i in 1:26) {
+    ttest.data <- t.test(pta_no[, cont_list[i]], pta_yes[, cont_list[i]], 
+                         alternative=c("two.sided"), paired=FALSE)
+    mean_no <- mean(pta_no[, cont_list[i]], na.rm=TRUE)
+    var_no <- var(pta_no[, cont_list[i]], na.rm=TRUE)
+    n_no <- sum(is.na(pta_no[, cont_list[i]])==FALSE)
+    mean_yes <- mean(pta_yes[, cont_list[i]])
+    var_yes <- var(pta_yes[, cont_list[i]])  
+    pooled_var <- ( (149-1)*var_no + (604-1)*var_yes ) / (753 - 2)
+    
+    output_cont[i,1] <- cont_list[i]
+    output_cont[i,2] <- round( ttest.data$estimate[1], 2)
+    output_cont[i,3] <- round( sd(pta_no[, cont_list[i]], na.rm=TRUE), 2)
+    output_cont[i,4] <- round( ttest.data$estimate[2], 2)
+    output_cont[i,5] <- round( sd(pta_yes[, cont_list[i]] ), 2)
+    output_cont[i,6] <- round( ttest.data$statistic, 2)
+    output_cont[i,7] <- round( ttest.data$p.value, 4)
+}
+
+print(data.frame(output_cont))
+#####
+
+
+# Yes vs No in Included; Binary variables
+#####
+cat_list <- c("Sex", "Married", "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", 
+              "Soc_Hearing_test", "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use",
+              "Soc_Very_positive", "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative")   
+
+pta_cat <- subset(pta, select = c(cat_list) )
+
+output_cat <- data.frame(Variable=as.character(), 
+                     Proportion_No=as.numeric(),
+                     Proportion_Yes=as.numeric(), 
+                     chisq=as.numeric(), 
+                     p_value=as.numeric(), stringsAsFactors=FALSE)
+for (i in 1:14) {
+  count_no <- sum(pta_no[, cat_list[i]])
+  count_yes <- sum(pta_yes[, cat_list[i]])
+    ptest.data <- prop.test(x = c(count_no, count_yes), n = c(604, 149))
+    output_cat[i,1] <- cat_list[i]
+    output_cat[i,2] <- round( ptest.data$estimate[1], 3)
+    output_cat[i,3] <- round( ptest.data$estimate[2], 3)
+    output_cat[i,4] <- round( ptest.data$statistic, 3)
+    output_cat[i,5] <- round( ptest.data$p.value, 4)
 }
 
 print(data.frame(output_cat))
