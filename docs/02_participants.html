@@ -297,23 +297,17 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before {
-content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "\e259";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "";
-border: none;
-}
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "";
+content: "\e258";
 font-family: 'Glyphicons Halflings';
-display: inline-block;
-padding: 10px;
-border-right: 1px solid #ddd;
+border: none;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -368,7 +362,10 @@ due to missing data</a>
 <li><a href="#percentage-of-missing-data" id="toc-percentage-of-missing-data">Percentage of missing data</a></li>
 <li><a href="#comparing-excluded-and-included-participants" id="toc-comparing-excluded-and-included-participants">Comparing excluded
 and included participants</a></li>
-<li><a href="#takeaway" id="toc-takeaway">Takeaway</a></li>
+<li><a href="#takeaway-re-included-vs-excluded" id="toc-takeaway-re-included-vs-excluded">Takeaway re: Included vs
+Excluded</a></li>
+<li><a href="#comparing-yes-and-no-purchase-within-included-participants" id="toc-comparing-yes-and-no-purchase-within-included-participants">Comparing
+‘Yes’ and ‘No’ purchase, within included participants</a></li>
 </ul></li>
 <li><a href="#internal-reliability-of-scales-subjective-age-age-stigma-ha-stigma" id="toc-internal-reliability-of-scales-subjective-age-age-stigma-ha-stigma">Internal
 reliability of scales: Subjective Age, Age Stigma, HA Stigma</a>
@@ -386,7 +383,7 @@ correlations within larger sample to n=753 sample</a>
 information</a></li>
 <li><a href="#tracking-ha-purchase-over-time" id="toc-tracking-ha-purchase-over-time">Tracking HA purchase over
 time</a></li>
-<li><a href="#takeaway-1" id="toc-takeaway-1">Takeaway</a></li>
+<li><a href="#takeaway" id="toc-takeaway">Takeaway</a></li>
 </ul></li>
 </ul>
 </div>
@@ -502,11 +499,61 @@ Soc…=Yes)</p>
 ## 13 Soc_Somewhat_negative           0.411           0.353 3.926  0.0475    0.118
 ## 14     Soc_Very_negative           0.241           0.171 8.398  0.0038    0.172</code></pre>
 </div>
-<div id="takeaway" class="section level2">
-<h2>Takeaway</h2>
+<div id="takeaway-re-included-vs-excluded" class="section level2">
+<h2>Takeaway re: Included vs Excluded</h2>
 <p>Excluded and included participants were generally similar. For
 statistically significant differences, the effect size never exceeded
 <em>d</em>=0.2 (small).</p>
+</div>
+<div id="comparing-yes-and-no-purchase-within-included-participants" class="section level2">
+<h2>Comparing ‘Yes’ and ‘No’ purchase, within included participants</h2>
+<p><a href="#top">back to top</a></p>
+<p>Continuous variables</p>
+<pre><code>##           Variable Mean_No SD_No Mean_Yes SD_Yes     t      p
+## 1              Age   68.70  8.93    71.42   8.76 -3.38 0.0009
+## 2  PTA4_better_ear   34.81  7.62    36.56   7.46 -2.56 0.0112
+## 3       HHIE_total   15.02  9.36    18.48   9.64 -3.95 0.0001
+## 4          Ability    6.40  1.69     6.08   1.60  2.12 0.0347
+## 5              Edu    3.35  1.08     3.31   1.19  0.38 0.7047
+## 6           Health    3.83  0.93     3.86   0.91 -0.33 0.7380
+## 7              QoL    4.09  0.84     4.03   0.88  0.82 0.4118
+## 8  Help_neighbours    2.00  0.92     1.96   0.87  0.54 0.5881
+## 9    Help_problems    2.22  0.78     2.17   0.81  0.64 0.5211
+## 10         Concern    3.67  1.22     3.56   1.29  1.00 0.3187
+## 11          Lonely    1.22  0.54     1.21   0.56  0.14 0.8881
+## 12        SubAge_1    2.90  1.13     2.87   1.05  0.31 0.7596
+## 13        SubAge_2    2.85  1.11     2.85   1.02 -0.03 0.9748
+## 14        SubAge_3    3.01  1.10     2.87   1.12  1.34 0.1803
+## 15     Sub_Age_avg    2.92  1.00     2.86   0.88  0.66 0.5068
+## 16     AgeStigma_1    2.60  1.02     2.57   0.99  0.28 0.7790
+## 17     AgeStigma_2    3.35  1.13     3.26   1.18  0.85 0.3956
+## 18     AgeStigma_3    3.69  1.18     3.63   1.16  0.53 0.5993
+## 19     AgeStigma_4    3.72  1.16     3.64   1.17  0.73 0.4683
+## 20     AgeStigma_5    3.83  1.12     3.64   1.17  1.78 0.0771
+## 21  Age_stigma_avg    2.35  0.95     2.46   0.96 -1.18 0.2382
+## 22      HaStigma_1    3.22  1.15     3.11   1.24  1.00 0.3199
+## 23      HaStigma_2    2.83  1.23     2.58   1.22  2.21 0.0279
+## 24      HaStigma_3    3.01  1.25     2.78   1.27  2.00 0.0465
+## 25      HaStigma_4    2.58  1.22     2.38   1.19  1.88 0.0614
+## 26   HA_stigma_avg    2.91  1.05     2.71   1.06  2.05 0.0416</code></pre>
+<p>Binary variables<br />
+(Note: Proportions refer to Sex=Male, Married=Yes, Accompanied=Yes,
+Soc…=Yes)</p>
+<pre><code>##                 Variable Proportion_No Proportion_Yes chisq p_value
+## 1                    Sex         0.583          0.537 0.849  0.3568
+## 2                Married         0.773          0.765 0.010  0.9192
+## 3                 Accomp         0.147          0.195 1.680  0.1950
+## 4         Soc_Suspect_HL         0.843          0.926 6.210  0.0127
+## 5            Soc_Know_HL         0.848          0.846 0.000  1.0000
+## 6         Soc_Discuss_HL         0.492          0.456 0.465  0.4954
+## 7       Soc_Hearing_test         0.647          0.651 0.000  1.0000
+## 8          Soc_Obtain_HA         0.712          0.725 0.045  0.8327
+## 9      Soc_Sometimes_use         0.528          0.537 0.010  0.9200
+## 10       Soc_Regular_use         0.657          0.678 0.143  0.7051
+## 11     Soc_Very_positive         0.581          0.644 1.724  0.1892
+## 12 Soc_Somewhat_positive         0.528          0.523 0.000  0.9917
+## 13 Soc_Somewhat_negative         0.353          0.356 0.000  1.0000
+## 14     Soc_Very_negative         0.166          0.195 0.521  0.4703</code></pre>
 </div>
 </div>
 <div id="internal-reliability-of-scales-subjective-age-age-stigma-ha-stigma" class="section level1">
@@ -634,7 +681,7 @@ Dropping each item in turn does not have a big impact (alpha = 0.83 to
 ##              lower alpha upper
 ## Feldt         0.88  0.89  0.90
 ## Duhachek      0.88  0.89  0.90
-## bootstrapped  0.88  0.89  0.91
+## bootstrapped  0.87  0.89  0.91
 ## 
 ##  Reliability if an item is dropped:
 ##            raw_alpha std.alpha G6(smc) average_r S/N alpha se  var.r med.r
@@ -768,7 +815,7 @@ there were too few observations in each cell).</p>
 ## data:  t
 ## X-squared = 5.9699, df = 4, p-value = 0.2014</code></pre>
 </div>
-<div id="takeaway-1" class="section level2">
+<div id="takeaway" class="section level2">
 <h2>Takeaway</h2>
 <p>If people are going to purchase hearing aids, &gt;80% do so in the
 first three months. Following people for longer doesn’t change the rate
