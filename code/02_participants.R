@@ -3,11 +3,13 @@
 
 # Percentage of missing data in Excluded vs Included
 #####
+# note "Age_stigma_avg" already has one item dropped 
 varlist <- c("ID", 
              "Age", "PTA4_better_ear", "HHIE_total", "Ability", "Sex", "Edu", "Married",
              "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely",
-             "SubAge_1", "SubAge_2", "SubAge_3", "AgeStigma_1", "AgeStigma_2", "AgeStigma_3", 
-             "AgeStigma_4", "AgeStigma_5", "HaStigma_1", "HaStigma_2", "HaStigma_3", "HaStigma_4", 
+             "SubAge_1", "SubAge_2", "SubAge_3", "Sub_Age_avg", 
+             "AgeStigma_1", "AgeStigma_2", "AgeStigma_3", "AgeStigma_4", "AgeStigma_5", "Age_stigma_avg",
+             "HaStigma_1", "HaStigma_2", "HaStigma_3", "HaStigma_4", "HA_stigma_avg", 
              "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", "Soc_Hearing_test",
              "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use", "Soc_Very_positive",
              "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative",
@@ -18,16 +20,24 @@ all_pta <- subset(data, PTA4_better_ear > 25)
 all_pta$group <- ifelse(all_pta$ID %in% pta$ID, "Included", "Excluded")
 all_pta <- subset(all_pta, select = c(varlist[-1]))  # delete ID variable; keep group variable
 
-# percent missing data in n=643, vs n=753
 library(dplyr)
 library(tidyr)
 
+# percent missing data in n=643, vs n=753
 all_pta %>% 
   group_by(group) %>% 
   summarise_all( ~ sum(is.na(.)) / 643 * 100) %>% 
   pivot_longer(cols = -1) %>%
   pivot_wider(names_from=group, values_from=value) %>% 
   print(n = 37)
+
+# number of missing observations per participant, in excluded group n=643
+all_pta$num_missing_obs <- apply(is.na(all_pta), MARGIN = 1, FUN = sum)
+summary(subset(all_pta, group == "Excluded")$num_missing_obs)
+hist(subset(all_pta, group == "Excluded")$num_missing_obs, 
+     main="Excluded n=643", xlab="Number missing observations", ylab="Frequency", 
+     xlim=c(0, 20), ylim=c(0, 500), breaks=20)
+
 #####
 
 
