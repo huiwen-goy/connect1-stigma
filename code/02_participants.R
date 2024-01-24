@@ -13,12 +13,11 @@ varlist <- c("ID",
              "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", "Soc_Hearing_test",
              "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use", "Soc_Very_positive",
              "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative",
-             "group")
+             "HA.Purchase", "group")
 
 # those who qualified, 1396
 all_pta <- subset(data, PTA4_better_ear > 25)
 all_pta$group <- ifelse(all_pta$ID %in% pta$ID, "Included", "Excluded")
-all_pta <- subset(all_pta, select = c(varlist[-1]))  # delete ID variable; keep group variable
 
 library(dplyr)
 library(tidyr)
@@ -33,13 +32,92 @@ all_pta %>%
 
 # number of missing observations per participant, in excluded group n=643
 all_pta$num_missing_obs <- apply(is.na(all_pta), MARGIN = 1, FUN = sum)
+
 summary(subset(all_pta, group == "Excluded")$num_missing_obs)
+
 hist(subset(all_pta, group == "Excluded")$num_missing_obs, 
-     main="Excluded n=643", xlab="Number missing observations", ylab="Frequency", 
+     main="Excluded participants (n=643)", xlab="Number missing observations", ylab="Frequency", 
      xlim=c(0, 20), ylim=c(0, 500), breaks=20)
 
 #####
 
+# Descriptives
+#####
+# Split participants into Excluded, Included_NoHA, Included_YesHA
+all_pta$three_groups <- c(NA)
+all_pta$three_groups[all_pta$group == "Excluded"] <- "Excluded"
+all_pta$three_groups[all_pta$group == "Included" & all_pta$HA.Purchase == "No"] <- "Included_NoHA"
+all_pta$three_groups[all_pta$group == "Included" & all_pta$HA.Purchase == "Yes"] <- "Included_YesHA"
+
+# Table 1: continuous variables
+Table1_cont_var <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability",
+               "Edu", "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely",
+               "Sub_Age_avg", "Age_stigma_avg", "HA_stigma_avg")  
+
+library(psych)
+
+temp_cont <- describeBy(all_pta[, Table1_cont_var], group=all_pta$three_groups)  
+
+temp_cont_df <- data.frame(Variable = as.character(rep(NA, 14)), 
+                        Mean_Ex = as.numeric(rep(NA, 14)), 
+                        SD_Ex = as.numeric(rep(NA, 14)), 
+                        Mean_InNo = as.numeric(rep(NA, 14)), 
+                        SD_InNo = as.numeric(rep(NA, 14)), 
+                        Mean_InYes = as.numeric(rep(NA, 14)), 
+                        SD_InYes = as.numeric(rep(NA, 14)), stringsAsFactors=FALSE)  
+
+temp_cont_df$Variable <- Table1_cont_var
+temp_cont_df$Mean_Ex <- temp_cont$Excluded$mean
+temp_cont_df$SD_Ex <- temp_cont$Excluded$sd
+temp_cont_df$Mean_InNo <- temp_cont$Included_NoHA$mean
+temp_cont_df$SD_InNo <- temp_cont$Included_NoHA$sd
+temp_cont_df$Mean_InYes <- temp_cont$Included_YesHA$mean
+temp_cont_df$SD_InYes <- temp_cont$Included_YesHA$sd
+  
+table1_cont <- cbind(temp_cont_df[,1], round(temp_cont_df[,2:7], 1))
+colnames(table1_cont)[1] <- "Variable"
+
+print(table1_cont)
+
+# Table 1: binary variables
+Table1_cat_var <- c("Sex", "Married", "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", 
+              "Soc_Hearing_test", "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use",
+              "Soc_Very_positive", "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative",
+              "three_groups")
+
+# get count of 1's in binary variables; troublesome because of NA's in Excluded
+cat_sum_wide <- all_pta[, Table1_cat_var] %>% 
+  group_by(three_groups) %>% 
+  summarise_all(.f = list(sum=sum), na.rm = TRUE)
+
+cat_sum_long <- data.frame(t(cat_sum_wide))
+colnames(cat_sum_long) <- c("Excl", "InclNoHA", "InclYesHA")
+cat_sum_long <- cat_sum_long[-1, ]
+cat_sum_long[, 1] <- as.numeric(cat_sum_long[, 1])
+cat_sum_long[, 2] <- as.numeric(cat_sum_long[, 2])
+cat_sum_long[, 3] <- as.numeric(cat_sum_long[, 3])
+
+# get counts of non-missing data to use as denominators
+cat_notmiss_wide <- data.frame(
+  all_pta[, Table1_cat_var] %>% 
+  group_by(three_groups) %>% 
+  summarise_all( ~ sum(!is.na(.))) )
+
+cat_notmiss_long <- data.frame(t(cat_notmiss_wide))
+colnames(cat_notmiss_long) <- c("Excluded", "Included_NoHA", "Included_YesHA")
+cat_notmiss_long <- cat_notmiss_long[-1, ]
+cat_notmiss_long[,1] <- as.numeric(cat_notmiss_long[,1])
+cat_notmiss_long[,2] <- as.numeric(cat_notmiss_long[,2])
+cat_notmiss_long[,3] <- as.numeric(cat_notmiss_long[,3])
+
+# divide counts by non-missing cases
+Table1_cat <- data.frame(cat_sum_long / cat_notmiss_long)
+Table1_cat$Variable <- Table1_cat_var[1:14]
+Table1_cat <- Table1_cat[c(4,1,2,3)]
+rownames(Table1_cat) <- c(1:14)
+
+print(cbind(Table1_cat[1], round(Table1_cat[,2:4], 2)))
+#####
 
 # Included vs Excluded; Continuous variables
 #####
