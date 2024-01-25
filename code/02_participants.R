@@ -28,10 +28,20 @@ all_pta %>%
   summarise_all( ~ sum(is.na(.)) / 643 * 100) %>% 
   pivot_longer(cols = -1) %>%
   pivot_wider(names_from=group, values_from=value) %>% 
-  print(n = 37)
+  print(n = 42)
 
 # number of missing observations per participant, in excluded group n=643
-all_pta$num_missing_obs <- apply(is.na(all_pta), MARGIN = 1, FUN = sum)
+# If Age Stigma item 1 was missing, the whole Age Stigma item was considered missing
+
+varlist_28 <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability", "Sex", "Edu", "Married",
+             "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely", 
+             "Sub_Age_avg", "Age_stigma_avg", "HA_stigma_avg", 
+             "Accomp", "Soc_Suspect_HL", "Soc_Know_HL", "Soc_Discuss_HL", "Soc_Hearing_test",
+             "Soc_Obtain_HA", "Soc_Sometimes_use", "Soc_Regular_use", "Soc_Very_positive",
+             "Soc_Somewhat_positive", "Soc_Somewhat_negative", "Soc_Very_negative",
+             "HA.Purchase", "group")
+
+all_pta$num_missing_obs <- apply(is.na(all_pta[, varlist_28]), MARGIN = 1, FUN = sum)
 
 summary(subset(all_pta, group == "Excluded")$num_missing_obs)
 
