@@ -254,14 +254,6 @@ m_cp013 <- rpart(formula28x, data = pta,
                  parms = list(split = "gini"), 
                  control = rpart.control(cp = 0.013, minsplit = 20, maxcompete=FALSE, maxsurrogate=0) )
 
-# Calculations of model metrics, tree plots
-
-# Basis of manual tree plots
-rpart.plot(m_cp013, box.palette=0, type = 4, extra = 101, under=TRUE, fallen.leaves=TRUE, 
-           varlen=0, faclen=0)
-rpart.plot(m_cp02, box.palette=0, type = 4, extra = 101, under=TRUE, fallen.leaves=TRUE, 
-           varlen=0, faclen=0)
-
 # Model metrics for CP = 0.02
 m_cp02_pred <- predict(m_cp02, newdata = pta, type = "class")
 m_cp02_pred.f <- factor( m_cp02_pred, levels=c("No", "Yes") )
@@ -292,29 +284,67 @@ colnames(obj) <- c("Accuracy %", "Sensitivity %", "Specificity %", "AUC")
 
 kable(obj, format="pipe", row.names = TRUE)
 
+# Code for plot of cp=0.013 model
+
+# Define function to re-label some factors for cleaner split labels
+split.fun <- function(x, labs, digits, varlen, faclen) {
+        labs <- sub("HHIE_total", "HHIE", labs)
+        labs <- sub("PTA4_better_ear", "PTA4", labs)
+        labs <- sub("Help_problems", "Help", labs)
+        labs <- sub("Sub_Age_avg", "Subj Age", labs)
+        labs <- sub("Soc_Somewhat_negative.f", "Somewhat Neg", labs)
+}
+
+png(filename = "Fig2.png", width=1700, height=1900, units='px', pointsize=24)
+prp(m13, 
+    type = 4, #what nodes & labels
+    extra = 101, #what shows in the node
+    under = FALSE, #only TRUE if extra > 0; Use TRUE to put the text under the box; else in the box
+    fallen.leaves = FALSE, #default F
+    nn = FALSE, #Display the node numbers (node ID, not inside nodes!) Default FALSE
+    ni = FALSE, #Display the node indices, Default FALSE
+    #yesno = 0, #0: nothing; 1: yes/no top split; 2: yes/no all splits, ignored for type=3 or 4
+    branch = 0, #1=square, 0=v; Default is 1 if fallen.leaves = TRUE, else default .2
+    uniform = TRUE, #default TRUE for vertical spacing
+    left = TRUE, #left side of a split is the path if the split condition is true, otherwise righ
+    digits = 2, #Default 2, number of significant digits in displayed numbers
+    varlen = 0, #Length of variable names in text at the splits; use full here. Default -8
+    faclen = 3, #Length of factor level names in splits. Default 3 letters abbrev
+    roundint = TRUE, #TRUE makes any integer scales remain integers in tree splits
+    #cex = 1.02, #Default NULL, meaning calculate the text size automatically
+    tweak = 1.1, #Make the text x% larger
+    clip.facs = FALSE, #default FALSE; TRUE means don't print variable=. 
+    add.labs = TRUE, #labels means all the boxes and splits
+    clip.right.labs = FALSE, #Applies only if type=3 or 4. Default is TRUE. 
+    clip.left.labs = FALSE,
+    compress = TRUE, #Default is TRUE; shifting nodes horizontally to make text bigger
+    ycompress = TRUE, #Default TRUE unless uniform=FALSE, shift labels vertically
+    Margin = 0, #default 0; Extra white space around the tree, as a fraction of the graph width.
+    space = 1, #default 1; Horizontal space, box border on each side node label text, in character widths.
+    gap = NULL, #Default NULL, min horizontal gap between (invisible) boxes, in character widths.
+    trace = FALSE, #default F; Use TRUE to print the automatically calculated cex, xlim, and ylim.
+    box.col = 0, #If used, box.palette ignored; Color of boxes around text; 0 is background colour, default
+    box.palette = "Grays", #coloring the node boxes; default 0 (all white)
+    border.col = "black", #box border around text; default color of text in box. Use 0 for no border. 
+    round = 1, #0 is sharp edges for node boxes, bigger numbers are rounder
+    leaf.round = NULL, #rounding of the corners of the leaf node boxes; def NULL or round, else ≥0
+    prefix = "HA ", #default ""; Prepend this string to the node labels, can use newline "\n\n" 
+    split.cex = 1.2, #relative size of the split text
+    split.font = 2, #def 2 bold; Font for the split labels; use font to change the node label text
+    split.family = "times", #Font family for the split labels; use family to change the node label text
+    split.col = "black", #black
+    split.box.col = 0, #0 = background; ok
+    eq = " = ", #Default " = ". String which separates the factor name from the levels in split labels
+    lt = " < ", #Default " < ". String which represents “less than” in split labels.
+    ge = " ≥ ", #Default " >= ". String which represents “greater than or equal” in split labels.
+    branch.col = "black", 
+    branch.lwd = 4, 
+    split.fun = split.fun  #function that generates the text at the splits
+    )
+dev.off()
+
 # Plot variable importance
 # sum(vi$Variable_importance) = 'x'; using 'x' as denominator, % printed in summary(model)
-
-# CP = 0.02
-vi_cp02 <- data.frame(m_cp02$variable.importance)
-colnames(vi_cp02) <- c("Variable_importance")
-vi_cp02$number <- seq(1, 3, by = 1)
-
-sum(vi_cp02$Variable_importance) #12.47614
-
-g1 <- ggplot(data = vi_cp02, aes(y = Variable_importance/12.47614*100, x = number)) + 
-  geom_col() + 
-  coord_flip(xlim=rev(c(0, 4)), ylim=c(0, 40)) + 
-  scale_x_continuous(name='', breaks = seq(1, 3, by = 1), labels=rownames(vi_cp02)) + 
-  scale_y_continuous(name="Variable importance (%)", breaks = seq(0, 40, by=5)) +
-  ggtitle("CP = 0.02") + 
-  theme_bw() + 
-  theme(plot.margin = unit(c(0.25, 0.5, 0.55, 1), "cm")) + 
-  theme(axis.title = element_text(size = 16, colour='black'), 
-        axis.text = element_text(size = 12, colour='black')) + 
-  theme(plot.title = element_text(hjust = 0.5, size = 20)) + 
-  theme(plot.margin = unit(c(1, 0.25, 0.25, 0.25), "cm"))
-
 
 # CP = 0.013
 vi_cp013 <- data.frame(m_cp013$variable.importance)
@@ -323,7 +353,7 @@ vi_cp013$number <- c(1:10)
 
 sum(vi_cp013$Variable_importance) #33.57578
 
-g2 <- ggplot(data = vi_cp013, aes(y = Variable_importance/33.57578*100, x = number)) + 
+ggplot(data = vi_cp013, aes(y = Variable_importance/33.57578*100, x = number)) + 
   geom_col() + 
   coord_flip(xlim=rev(c(0, 11)), ylim=c(0, 40)) + 
   scale_x_continuous(name='', breaks = seq(1, 10, by = 1), labels=rownames(vi_cp013)) + 
@@ -336,8 +366,6 @@ g2 <- ggplot(data = vi_cp013, aes(y = Variable_importance/33.57578*100, x = numb
   theme(plot.title = element_text(hjust = 0.5, size = 20)) + 
   theme(plot.margin = unit(c(1, 0.25, 0.25, 0.25), "cm"))
 
-library(patchwork)
-g1 / g2 
 #####
 
 # Check how tree model changes with different subsets of the data
@@ -352,64 +380,6 @@ holdout <- createFolds(y = pta$HA.Purchase, k = 5, list = FALSE)
 # create dataframe to store numbers obtained from each subset
 
 var_list <- c("Age", "PTA4_better_ear", "HHIE_total", "Ability", "Sex.f", "Edu", "Married.f", "Health", "QoL", "Help_neighbours", "Help_problems", "Concern", "Lonely", "Sub_Age_avg", "Age_stigma_avg", "HA_stigma_avg", "Accomp.f", "Soc_Suspect_HL.f", "Soc_Know_HL.f", "Soc_Discuss_HL.f", "Soc_Hearing_test.f", "Soc_Obtain_HA.f", "Soc_Sometimes_use.f", "Soc_Regular_use.f", "Soc_Very_positive.f", "Soc_Somewhat_positive.f", "Soc_Somewhat_negative.f", "Soc_Very_negative.f")
-
-# create df for metrics
-dfmet_cp02 <- data.frame(metric = c("Accuracy", "Sensitivity", "Specificity", "AUC"))
-# create df for var imp
-dfvi_cp02 <- data.frame(variable = var_list, temp = c(0) )
-
-# drop out each fold, and get tree and variable importance for remaining data
-for (i in 1:5) {
-  tempdata <- pta[holdout != i, ]
-  
-  # construct tree model
-  mtree <- rpart(formula28x, data = tempdata, weights = tempdata$caseweights, 
-                 method = "class", parms = list(split = "gini"), 
-                 control = rpart.control(cp = 0.02, maxcompete = FALSE, maxsurrogate=0))
-
-  # get metrics
-  mtree_pred <- predict(mtree, newdata = tempdata, type='class')
-  mtree_pred_bi <- ifelse(mtree_pred == "No", 0, 1)
-  
-  cm <- confusionMatrix(data = as.factor(mtree_pred_bi), 
-                        reference = as.factor(tempdata$Purchased_HA), 
-                        positive = c("1"))
-  roc_out <- roc(response = tempdata$Purchased_HA, predictor = mtree_pred_bi)
-  
-  metrics_temp <- data.frame(newcol = as.numeric( c(cm$overall[1], cm$byClass[1], cm$byClass[2], roc_out$auc) ))
-  colnames(metrics_temp)[1] <- paste0("subset_", i)
-    
-  # column bind onto df for metrics
-  dfmet_cp02 <- cbind(dfmet_cp02, metrics_temp)
-  
-  # get variable importance as dataframe
-  varimp_temp <- data.frame(mtree$variable.importance)
-  varimp_temp$variable <- rownames(varimp_temp) 
-  colnames(varimp_temp)[1] <- paste0("subset_", i)
-  
-  # left merge onto master list of variables
-  dfvi_cp02 <- merge(x = dfvi_cp02, 
-                     y = varimp_temp, 
-                     all.x = TRUE, 
-                     by.y = c("variable") )
-}
-
-# drop temp column of zero's
-dfvi_cp02 <- dfvi_cp02[, -2]
-
-# divide each column by sum of column's importances and convert to %
-percentages_cp02 <- mapply('/', dfvi_cp02[, 2:6], colSums(dfvi_cp02[, 2:6], na.rm=TRUE)) * 100
-
-# Changes in model metrics (%) across data subsets
-met_cp02 <- data.frame(cbind(dfmet_cp02[,1], round(dfmet_cp02[,2:6]*100, 2)))
-colnames(met_cp02)[1] <- "metric"
-kable(met_cp02, format="pipe", row.names = FALSE)
-
-# Changes in variable importance (%) across data subsets, CP = 0.02
-varimp_cp02 <- data.frame(cbind(dfvi_cp02$variable, round(percentages_cp02, 2))) 
-varimp_cp02 <- replace(varimp_cp02, is.na(varimp_cp02), "*")
-colnames(varimp_cp02)[1] <- "variable"
-kable(varimp_cp02, format="pipe", row.names = FALSE)
 
 # create df for metrics
 dfmet_cp013 <- data.frame(metric = c("Accuracy", "Sensitivity", "Specificity", "AUC"))
